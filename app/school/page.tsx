@@ -24,7 +24,7 @@ export default async function SchoolPage() {
     .from('school_report_images_categories')
     .select('*')
     .eq('is_active', true)
-    .order('display_order');
+    .order('name');
 
   // Fetch existing images for this school
   const { data: existingImages } = await supabase
