@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import NextImage from 'next/image';
 import { school_report_images_createClient } from '@/lib/supabase/client';
 import { LogIn, Shield, Image, Upload, Sparkles } from 'lucide-react';
 
@@ -133,7 +134,7 @@ export default function LoginPage() {
                 <div className="relative">
                   {/* Logo */}
                   <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
-                    <img src="/moe-logo.png" alt="Ministry of Education Logo" className="w-full h-full object-contain drop-shadow-2xl" />
+                    <NextImage src="/moe-logo.png" alt="Ministry of Education Logo" width={112} height={112} className="w-full h-full object-contain drop-shadow-2xl" priority />
                   </div>
                   {/* Soft glow effect */}
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-400/30 to-purple-400/30 blur-2xl -z-10"></div>
@@ -179,7 +180,8 @@ export default function LoginPage() {
 
               <div className="flex items-start space-x-3 group">
                 <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-200">
-                  <Image className="w-5 h-5 text-white" />
+                  {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                  <Image className="w-5 h-5 text-white" aria-hidden="true" />
                 </div>
                 <div className="text-left flex-1">
                   <h3 className="font-semibold text-white text-base mb-0.5">Review & Manage</h3>
