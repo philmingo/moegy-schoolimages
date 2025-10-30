@@ -23,8 +23,14 @@ export default async function SchoolPage() {
   const { data: categories } = await supabase
     .from('school_report_images_categories')
     .select('*')
-    .eq('is_active', true)
-    .order('name');
+    .eq('is_active', true);
+
+  // Sort categories alphabetically with "Other" always last
+  const sortedCategories = categories?.sort((a, b) => {
+    if (a.name.toLowerCase() === 'other') return 1;
+    if (b.name.toLowerCase() === 'other') return -1;
+    return a.name.localeCompare(b.name);
+  });
 
   // Fetch existing images for this school
   const { data: existingImages } = await supabase
@@ -54,7 +60,7 @@ export default async function SchoolPage() {
         </div>
 
         <SchoolUploadInterface
-          categories={categories || []}
+          categories={sortedCategories || []}
           existingImages={existingImages || []}
           schoolCode={user.schoolCode}
           userId={user.id}
