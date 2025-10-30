@@ -49,7 +49,7 @@ export default async function SchoolPage() {
             Upload Incident Report Images
           </h2>
           <p className="text-gray-600">
-            Upload up to 4 images per category. Accepted formats: JPG, PNG, WEBP (max 5MB each)
+            Upload up to 4 images per category. Accepted formats: JPG, PNG, WEBP (max 10MB each)
           </p>
         </div>
 

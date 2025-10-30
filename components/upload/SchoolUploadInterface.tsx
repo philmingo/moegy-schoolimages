@@ -34,6 +34,7 @@ export default function SchoolUploadInterface({
   userEmail,
 }: Props) {
   const [images, setImages] = useState<ExistingImage[]>(existingImages);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   const handleImageUploaded = (newImage: ExistingImage) => {
     setImages([...images, newImage]);
@@ -43,24 +44,41 @@ export default function SchoolUploadInterface({
     setImages(images.filter((img) => img.id !== imageId));
   };
 
+  const toggleCategory = (categoryId: string) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryId)) {
+      newExpanded.delete(categoryId);
+    } else {
+      newExpanded.add(categoryId);
+    }
+    setExpandedCategories(newExpanded);
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {categories.map((category) => {
         const categoryImages = images.filter(
           (img) => img.category_id === category.id
         );
+        const isExpanded = expandedCategories.has(category.id);
 
         return (
-          <CategoryUploadSection
+          <div
             key={category.id}
-            category={category}
-            existingImages={categoryImages}
-            schoolCode={schoolCode}
-            userId={userId}
-            userEmail={userEmail}
-            onImageUploaded={handleImageUploaded}
-            onImageDeleted={handleImageDeleted}
-          />
+            className={isExpanded ? 'md:col-span-2 lg:col-span-3' : ''}
+          >
+            <CategoryUploadSection
+              category={category}
+              existingImages={categoryImages}
+              schoolCode={schoolCode}
+              userId={userId}
+              userEmail={userEmail}
+              onImageUploaded={handleImageUploaded}
+              onImageDeleted={handleImageDeleted}
+              isExpanded={isExpanded}
+              onToggle={() => toggleCategory(category.id)}
+            />
+          </div>
         );
       })}
 
