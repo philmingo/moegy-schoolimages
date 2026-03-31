@@ -37,9 +37,14 @@ export async function school_report_images_getCurrentUser(): Promise<AuthUser | 
   // Try to get role from database first
   const { data: userProfile } = await supabase
     .from('school_report_images_users')
-    .select('role, school_code, region_id')
+    .select('role, school_code, region_id, is_active')
     .eq('user_id', user.id)
     .single();
+
+  // If user exists but is not active, return null (pending approval)
+  if (userProfile && !userProfile.is_active) {
+    return null;
+  }
 
   let role: UserRole;
   let schoolCode: string | null = null;

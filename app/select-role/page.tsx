@@ -1,0 +1,178 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import NextImage from 'next/image';
+import { REGIONS } from '@/lib/constants/school-data';
+
+export default function SelectRolePage() {
+  const router = useRouter();
+  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [selectedRegion, setSelectedRegion] = useState<string>('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/select-role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: selectedRole,
+          regionId: selectedRole === 'regional_officer' ? selectedRegion : null,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to submit role selection');
+      }
+
+      router.push('/pending-approval');
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const canSubmit =
+    selectedRole === 'officer' ||
+    (selectedRole === 'regional_officer' && selectedRegion);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="max-w-lg w-full">
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+          {/* Header */}
+          <div className="text-center mb-6">
+            <div className="flex justify-center mb-4">
+              <NextImage
+                src="/moe-logo.png"
+                alt="Ministry of Education Logo"
+                width={80}
+                height={80}
+                className="object-contain"
+                priority
+              />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">Select Your Role</h1>
+            <p className="text-gray-600 text-sm">
+              Choose your role to continue. An administrator will review and approve your access.
+            </p>
+          </div>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            {/* Role Selection */}
+            <div className="space-y-3 mb-6">
+              <label
+                className={`block p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  selectedRole === 'officer'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+                onClick={() => {
+                  setSelectedRole('officer');
+                  setSelectedRegion('');
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="officer"
+                    checked={selectedRole === 'officer'}
+                    onChange={() => {
+                      setSelectedRole('officer');
+                      setSelectedRegion('');
+                    }}
+                    className="mt-1 text-blue-600"
+                  />
+                  <div>
+                    <p className="font-semibold text-gray-900">Education Officer</p>
+                    <p className="text-sm text-gray-600 mt-0.5">
+                      View all school report images across all regions
+                    </p>
+                  </div>
+                </div>
+              </label>
+
+              <label
+                className={`block p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  selectedRole === 'regional_officer'
+                    ? 'border-teal-500 bg-teal-50'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+                onClick={() => setSelectedRole('regional_officer')}
+              >
+                <div className="flex items-start gap-3">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="regional_officer"
+                    checked={selectedRole === 'regional_officer'}
+                    onChange={() => setSelectedRole('regional_officer')}
+                    className="mt-1 text-teal-600"
+                  />
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">Regional Officer</p>
+                    <p className="text-sm text-gray-600 mt-0.5">
+                      View and upload images for schools in your assigned region
+                    </p>
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            {/* Region Selector (shown when Regional Officer is selected) */}
+            {selectedRole === 'regional_officer' && (
+              <div className="mb-6">
+                <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Your Region
+                </label>
+                <select
+                  id="region"
+                  value={selectedRegion}
+                  onChange={(e) => setSelectedRegion(e.target.value)}
+                  required
+                  className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+                  <option value="">Choose a region...</option>
+                  {REGIONS.map((region) => (
+                    <option key={region.id} value={region.id}>
+                      {region.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={!canSubmit || submitting}
+              className="w-full py-3 px-6 text-white font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+            >
+              {submitting ? 'Submitting...' : 'Submit for Approval'}
+            </button>
+
+            <p className="text-xs text-gray-500 text-center mt-4">
+              Your request will be reviewed by an administrator. You will gain access once approved.
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}

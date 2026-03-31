@@ -69,15 +69,19 @@ export default function LoginPage() {
         // User is already logged in, get their profile and redirect based on role
         const { data: userProfile } = await supabase
           .from('school_report_images_users')
-          .select('role')
+          .select('role, is_active')
           .eq('user_id', session.user.id)
           .single();
 
-        if (userProfile?.role === 'admin') {
+        if (!userProfile) {
+          router.push('/select-role');
+        } else if (!userProfile.is_active) {
+          router.push('/pending-approval');
+        } else if (userProfile.role === 'admin') {
           router.push('/admin');
-        } else if (userProfile?.role === 'regional_officer') {
+        } else if (userProfile.role === 'regional_officer') {
           router.push('/regional-officer');
-        } else if (userProfile?.role === 'officer') {
+        } else if (userProfile.role === 'officer') {
           router.push('/officer');
         } else {
           router.push('/school');

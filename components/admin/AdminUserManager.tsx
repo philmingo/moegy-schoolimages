@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { school_report_images_createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
@@ -66,6 +66,58 @@ export default function AdminUserManager({ regions }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded]);
 
+  const pendingUsers = useMemo(() => users.filter((u) => !u.is_active && u.user_id), [users]);
+
+  const handleApprove = async (user: UserRecord) => {
+    setSaving(user.id);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const supabase = school_report_images_createClient();
+
+      const { error: updateError } = await supabase
+        .from('school_report_images_users')
+        .update({ is_active: true, updated_at: new Date().toISOString() })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setUsers(users.map((u) => u.id === user.id ? { ...u, is_active: true } : u));
+      setSuccess(`Approved ${user.email} as ${getRoleLabel(user.role)}`);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to approve user');
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const handleDeny = async (user: UserRecord) => {
+    setSaving(user.id);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const supabase = school_report_images_createClient();
+
+      const { error: deleteError } = await supabase
+        .from('school_report_images_users')
+        .delete()
+        .eq('id', user.id);
+
+      if (deleteError) throw deleteError;
+
+      setUsers(users.filter((u) => u.id !== user.id));
+      setSuccess(`Denied and removed ${user.email}`);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to deny user');
+    } finally {
+      setSaving(null);
+    }
+  };
+
   const handleRoleChange = async (user: UserRecord, newRole: string, regionId: string | null) => {
     setSaving(user.id);
     setError(null);
@@ -92,7 +144,7 @@ export default function AdminUserManager({ regions }: Props) {
           ? { ...u, role: newRole, region_id: newRole === 'regional_officer' ? regionId : null }
           : u
       ));
-      setSuccess(`Updated ${user.email} to ${newRole}${newRole === 'regional_officer' && regionId ? ` (${regions.find(r => r.id === regionId)?.name})` : ''}`);
+      setSuccess(`Updated ${user.email} to ${getRoleLabel(newRole)}${newRole === 'regional_officer' && regionId ? ` (${regions.find(r => r.id === regionId)?.name})` : ''}`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
       setError(err.message || 'Failed to update user role');
@@ -110,7 +162,6 @@ export default function AdminUserManager({ regions }: Props) {
     try {
       const email = addEmail.trim().toLowerCase();
 
-      // Check if email already exists
       const exists = users.some((u) => u.email.toLowerCase() === email);
       if (exists) {
         setError('A user with this email already exists');
@@ -139,7 +190,7 @@ export default function AdminUserManager({ regions }: Props) {
       if (insertError) throw insertError;
 
       setUsers([data, ...users]);
-      setSuccess(`Pre-added ${email} as ${getRoleLabel(addRole)}${addRole === 'regional_officer' && addRegion ? ` (${regions.find(r => r.id === addRegion)?.name})` : ''}. They will be auto-assigned this role on first login.`);
+      setSuccess(`Pre-added ${email} as ${getRoleLabel(addRole)}. They will be auto-assigned on first login.`);
       setAddEmail('');
       setAddRole('regional_officer');
       setAddRegion('');
@@ -161,7 +212,7 @@ export default function AdminUserManager({ regions }: Props) {
 
     const matchesRole = filterRole === 'all' || user.role === filterRole;
 
-    return matchesSearch && matchesRole;
+    return matchesSearch && matchesRole && user.is_active;
   });
 
   const getRoleBadgeColor = (role: string) => {
@@ -177,6 +228,7 @@ export default function AdminUserManager({ regions }: Props) {
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'regional_officer': return 'Regional Officer';
+      case 'officer': return 'Education Officer';
       default: return role.charAt(0).toUpperCase() + role.slice(1);
     }
   };
@@ -190,6 +242,11 @@ export default function AdminUserManager({ regions }: Props) {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-semibold text-gray-900">User Management</h2>
+            {pendingUsers.length > 0 && (
+              <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">
+                {pendingUsers.length} pending
+              </span>
+            )}
             <svg
               className={`w-5 h-5 text-gray-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
               fill="none"
@@ -211,7 +268,7 @@ export default function AdminUserManager({ regions }: Props) {
             </button>
           )}
           {!isExpanded && (
-            <span className="text-sm text-gray-500">Manage user roles and regional assignments</span>
+            <span className="text-sm text-gray-500">Manage user roles and approvals</span>
           )}
         </div>
       </div>
@@ -230,12 +287,71 @@ export default function AdminUserManager({ regions }: Props) {
             </div>
           )}
 
+          {/* Pending Approvals */}
+          {pendingUsers.length > 0 && (
+            <div className="mb-6 border-2 border-amber-300 bg-amber-50 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-amber-900 mb-3 flex items-center gap-2">
+                <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Pending Approval ({pendingUsers.length})
+              </h3>
+              <div className="space-y-2">
+                {pendingUsers.map((user) => {
+                  const regionName = user.region_id
+                    ? regions.find((r) => r.id === user.region_id)?.name
+                    : null;
+
+                  return (
+                    <div key={user.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-amber-200">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-medium text-gray-900 text-sm truncate">{user.email}</p>
+                          <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getRoleBadgeColor(user.role)}`}>
+                            {getRoleLabel(user.role)}
+                          </span>
+                          {regionName && (
+                            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700">
+                              {regionName}
+                            </span>
+                          )}
+                        </div>
+                        {user.full_name && (
+                          <p className="text-xs text-gray-600 mt-0.5">{user.full_name}</p>
+                        )}
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          Requested {new Date(user.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0 ml-3">
+                        <button
+                          onClick={() => handleApprove(user)}
+                          disabled={saving === user.id}
+                          className="px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                        >
+                          {saving === user.id ? '...' : 'Approve'}
+                        </button>
+                        <button
+                          onClick={() => handleDeny(user)}
+                          disabled={saving === user.id}
+                          className="px-3 py-1.5 text-sm font-medium bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                        >
+                          Deny
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Pre-add User Form */}
           {showAddForm && (
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <h3 className="text-sm font-semibold text-gray-900 mb-3">Pre-add User</h3>
               <p className="text-xs text-gray-600 mb-3">
-                Add a user&apos;s email before they log in. They&apos;ll be auto-assigned the selected role on first login.
+                Add a user&apos;s email before they log in. They&apos;ll be auto-assigned the selected role on first login (no approval needed).
               </p>
               <form onSubmit={handleAddUser}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
@@ -264,7 +380,7 @@ export default function AdminUserManager({ regions }: Props) {
                       className="w-full px-3 py-2 text-sm bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="regional_officer">Regional Officer</option>
-                      <option value="officer">Officer</option>
+                      <option value="officer">Education Officer</option>
                       <option value="admin">Admin</option>
                     </select>
                   </div>
@@ -343,13 +459,13 @@ export default function AdminUserManager({ regions }: Props) {
                 <option value="all">All Roles</option>
                 <option value="admin">Admin</option>
                 <option value="regional_officer">Regional Officer</option>
-                <option value="officer">Officer</option>
+                <option value="officer">Education Officer</option>
                 <option value="school">School</option>
               </select>
             </div>
           </div>
 
-          {/* Users List */}
+          {/* Active Users List */}
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -359,7 +475,7 @@ export default function AdminUserManager({ regions }: Props) {
           ) : (
             <div className="space-y-3">
               <p className="text-sm text-gray-600 mb-2">
-                Showing {filteredUsers.length} of {users.length} users
+                Showing {filteredUsers.length} active users
               </p>
               {filteredUsers.map((user) => (
                 <UserRow
@@ -431,7 +547,7 @@ function UserRow({
             )}
             {!user.user_id && (
               <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700">
-                Pending Login
+                Pre-added
               </span>
             )}
           </div>
@@ -455,7 +571,7 @@ function UserRow({
                 className="px-3 py-1.5 text-sm bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="school">School</option>
-                <option value="officer">Officer</option>
+                <option value="officer">Education Officer</option>
                 <option value="regional_officer">Regional Officer</option>
                 <option value="admin">Admin</option>
               </select>

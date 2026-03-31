@@ -83,7 +83,7 @@ export async function GET(request: Request) {
       // Get user profile from custom users table
       let { data: userProfile, error } = await supabase
         .from('school_report_images_users')
-        .select('role, school_code, region_id')
+        .select('role, school_code, region_id, is_active')
         .eq('user_id', user.id)
         .single();
 
@@ -94,7 +94,7 @@ export async function GET(request: Request) {
         // Check if admin pre-added this email
         const { data: preAddedProfile } = await supabase
           .from('school_report_images_users')
-          .select('id, role, school_code, region_id')
+          .select('id, role, school_code, region_id, is_active')
           .eq('email', user.email!)
           .is('user_id', null)
           .single();
@@ -111,7 +111,7 @@ export async function GET(request: Request) {
               updated_at: new Date().toISOString(),
             })
             .eq('id', preAddedProfile.id)
-            .select('role, school_code, region_id')
+            .select('role, school_code, region_id, is_active')
             .single();
 
           if (claimError) {
@@ -124,57 +124,87 @@ export async function GET(request: Request) {
           console.log('✅ [AUTH CALLBACK] Pre-added profile claimed successfully');
           userProfile = claimedProfile;
         } else {
-          // No pre-added record found, create a new one from email parsing
-          console.log('⚠️ [AUTH CALLBACK] No pre-added profile, creating from email...');
+          // No pre-added record — determine if this is a school or needs role selection
+          const { school_report_images_extractSchoolCode } = await import('@/lib/utils/email-parser');
+          const emailLower = user.email!.toLowerCase();
+          const isSchoolEmail = emailLower.match(/^hm\.[a-z0-9]+@moe\.edu\.gy$/);
+          const isMoeEmail = emailLower.match(/@moe\.(edu|gov)\.gy$/);
+          const isAdmin = emailLower === 'randy.bobb@moe.gov.gy';
 
-          // Import the role determination logic
-          const { school_report_images_getUserRole, school_report_images_extractSchoolCode } = await import('@/lib/utils/email-parser');
-
-          const role = school_report_images_getUserRole(user.email!);
-          const schoolCode = role === 'school' ? school_report_images_extractSchoolCode(user.email!) : null;
-
-          if (!role) {
-            console.error('❌ [AUTH CALLBACK] Email not authorized:', {
-              email: user.email,
-              timestamp: new Date().toISOString()
-            });
+          if (!isMoeEmail) {
+            console.error('❌ [AUTH CALLBACK] Email not authorized:', { email: user.email });
             return NextResponse.redirect(
               new URL(`/login?error=unauthorized&email=${encodeURIComponent(user.email || '')}&details=Email domain not authorized`, requestUrl.origin)
             );
           }
 
-          console.log('🔵 [AUTH CALLBACK] Creating profile with role:', role, 'schoolCode:', schoolCode);
+          if (isAdmin) {
+            // Admin — auto-create with full access
+            const { data: newProfile, error: createError } = await supabase
+              .from('school_report_images_users')
+              .insert({
+                user_id: user.id,
+                email: user.email,
+                role: 'admin',
+                full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+                is_active: true,
+              })
+              .select('role, school_code, region_id, is_active')
+              .single();
 
-          // Create the user profile
-          const { data: newProfile, error: createError } = await supabase
-            .from('school_report_images_users')
-            .insert({
-              user_id: user.id,
-              email: user.email,
-              role: role,
-              school_code: schoolCode,
-              full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-              is_active: true
-            })
-            .select('role, school_code, region_id')
-            .single();
+            if (createError) {
+              console.error('❌ [AUTH CALLBACK] Failed to create admin profile:', createError);
+              return NextResponse.redirect(
+                new URL(`/login?error=profile_creation_failed&email=${encodeURIComponent(user.email || '')}&details=${encodeURIComponent(createError.message)}`, requestUrl.origin)
+              );
+            }
+            userProfile = newProfile;
+          } else if (isSchoolEmail) {
+            // School email — auto-create with immediate access
+            const schoolCode = school_report_images_extractSchoolCode(user.email!);
+            const { data: newProfile, error: createError } = await supabase
+              .from('school_report_images_users')
+              .insert({
+                user_id: user.id,
+                email: user.email,
+                role: 'school',
+                school_code: schoolCode,
+                full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+                is_active: true,
+              })
+              .select('role, school_code, region_id, is_active')
+              .single();
 
-          if (createError) {
-            console.error('❌ [AUTH CALLBACK] Failed to create user profile:', {
-              userId: user.id,
-              userEmail: user.email,
-              errorCode: createError.code,
-              errorMessage: createError.message,
-              errorDetails: createError.details,
-              timestamp: new Date().toISOString()
-            });
-            return NextResponse.redirect(
-              new URL(`/login?error=profile_creation_failed&email=${encodeURIComponent(user.email || '')}&details=${encodeURIComponent(createError.message)}&code=${encodeURIComponent(createError.code || 'UNKNOWN')}`, requestUrl.origin)
-            );
+            if (createError) {
+              console.error('❌ [AUTH CALLBACK] Failed to create school profile:', createError);
+              return NextResponse.redirect(
+                new URL(`/login?error=profile_creation_failed&email=${encodeURIComponent(user.email || '')}&details=${encodeURIComponent(createError.message)}`, requestUrl.origin)
+              );
+            }
+            userProfile = newProfile;
+          } else {
+            // Non-school MOE email — needs role selection
+            // Create a placeholder profile with no role, inactive
+            const { error: createError } = await supabase
+              .from('school_report_images_users')
+              .insert({
+                user_id: user.id,
+                email: user.email,
+                role: 'officer',
+                full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+                is_active: false,
+              });
+
+            if (createError) {
+              console.error('❌ [AUTH CALLBACK] Failed to create placeholder profile:', createError);
+              return NextResponse.redirect(
+                new URL(`/login?error=profile_creation_failed&email=${encodeURIComponent(user.email || '')}&details=${encodeURIComponent(createError.message)}`, requestUrl.origin)
+              );
+            }
+
+            console.log('🔵 [AUTH CALLBACK] Non-school user, redirecting to role selection...');
+            return NextResponse.redirect(new URL('/select-role', requestUrl.origin));
           }
-
-          console.log('✅ [AUTH CALLBACK] Profile created successfully');
-          userProfile = newProfile;
         }
       } else if (error) {
         // Other errors (like infinite recursion)
@@ -192,14 +222,26 @@ export async function GET(request: Request) {
       }
 
       const role = userProfile.role;
-      const schoolCode = userProfile.school_code;
+      const isActive = userProfile.is_active;
 
       console.log('✅ [AUTH CALLBACK] User profile loaded:', {
         email: user.email,
         role: role,
-        schoolCode: schoolCode,
+        isActive: isActive,
         timestamp: new Date().toISOString()
       });
+
+      // If user is not active, they need approval (unless they still need role selection)
+      if (!isActive) {
+        // Check if they have a real role selected or still need to pick
+        if (role === 'officer' && !userProfile.school_code && !userProfile.region_id) {
+          // Could be placeholder — send to role selection
+          console.log('🔵 [AUTH CALLBACK] Inactive user without role details, redirecting to /select-role...');
+          return NextResponse.redirect(new URL('/select-role', requestUrl.origin));
+        }
+        console.log('🔵 [AUTH CALLBACK] User pending approval, redirecting to /pending-approval...');
+        return NextResponse.redirect(new URL('/pending-approval', requestUrl.origin));
+      }
 
       // Redirect based on role
       if (role === 'school') {
