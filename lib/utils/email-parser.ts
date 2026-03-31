@@ -18,7 +18,7 @@ export function school_report_images_extractSchoolCode(email: string): string | 
 /**
  * Determines user role based on email pattern
  */
-export type UserRole = 'school' | 'officer' | 'admin' | null;
+export type UserRole = 'school' | 'officer' | 'regional_officer' | 'admin' | null;
 
 export function school_report_images_getUserRole(email: string): UserRole {
   if (!email) return null;

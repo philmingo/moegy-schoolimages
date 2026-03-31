@@ -75,6 +75,8 @@ export default function LoginPage() {
 
         if (userProfile?.role === 'admin') {
           router.push('/admin');
+        } else if (userProfile?.role === 'regional_officer') {
+          router.push('/regional-officer');
         } else if (userProfile?.role === 'officer') {
           router.push('/officer');
         } else {

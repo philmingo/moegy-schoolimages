@@ -2,6 +2,7 @@ import { school_report_images_getCurrentUser, school_report_images_requireRole }
 import { school_report_images_createServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import AdminCategoryManager from '@/components/admin/AdminCategoryManager';
+import AdminUserManager from '@/components/admin/AdminUserManager';
 import DashboardHeaderWrapper from '@/components/layout/DashboardHeaderWrapper';
 import AdminImageListView from '@/components/admin/AdminImageListView';
 import OfficerGalleryView from '@/components/gallery/OfficerGalleryView';
@@ -117,6 +118,9 @@ export default async function AdminPage() {
 
         {/* Category Management */}
         <AdminCategoryManager categories={categories || []} />
+
+        {/* User Management */}
+        <AdminUserManager regions={REGIONS} />
 
         {/* Images by School List */}
         <div className="mt-8">

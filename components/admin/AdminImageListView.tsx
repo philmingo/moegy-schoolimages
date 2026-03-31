@@ -13,6 +13,7 @@ interface ImageData {
   category_id: string;
   storage_path: string;
   filename: string;
+  comment: string | null;
   uploaded_by_email: string;
   created_at: string;
   category: {
@@ -498,6 +499,9 @@ export default function AdminImageListView({
                               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-5">
                                 <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
                                   <p className="text-xs truncate">{img.filename}</p>
+                                  {img.comment && (
+                                    <p className="text-xs text-gray-300 truncate mt-0.5 italic">{img.comment}</p>
+                                  )}
                                   <p className="text-xs text-gray-300 mt-1">
                                     {new Date(img.created_at).toLocaleDateString()}
                                   </p>
@@ -591,6 +595,7 @@ export default function AdminImageListView({
           categoryName={selectedImage.category.name}
           uploadDate={selectedImage.created_at}
           schoolName={schoolMap.get(selectedImage.school_code)}
+          comment={selectedImage.comment}
           onPrevious={handlePreviousImage}
           onNext={handleNextImage}
           hasPrevious={selectedImageIndex !== null && selectedImageIndex > 0}

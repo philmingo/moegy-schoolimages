@@ -12,6 +12,7 @@ interface ImageModalProps {
   categoryName: string;
   uploadDate: string;
   schoolName?: string;
+  comment?: string | null;
   onPrevious?: () => void;
   onNext?: () => void;
   hasPrevious?: boolean;
@@ -26,6 +27,7 @@ export default function ImageModal({
   categoryName,
   uploadDate,
   schoolName,
+  comment,
   onPrevious,
   onNext,
   hasPrevious,
@@ -125,6 +127,12 @@ export default function ImageModal({
               <p className="font-medium">{new Date(uploadDate).toLocaleDateString()}</p>
             </div>
           </div>
+          {comment && (
+            <div className="mt-3 pt-3 border-t border-white border-opacity-20">
+              <span className="text-gray-300 text-sm">Comment:</span>
+              <p className="font-medium mt-1">{comment}</p>
+            </div>
+          )}
         </div>
       </div>
 

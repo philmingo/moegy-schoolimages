@@ -19,6 +19,7 @@ interface ImageData {
   category_id: string;
   storage_path: string;
   filename: string;
+  comment: string | null;
   uploaded_by_email: string;
   created_at: string;
   category: {
@@ -424,6 +425,9 @@ export default function OfficerGalleryView({
                         {img.school_code}
                       </p>
                       <p className="text-xs text-gray-300 truncate mt-1">{img.filename}</p>
+                      {img.comment && (
+                        <p className="text-xs text-gray-300 truncate mt-0.5 italic">{img.comment}</p>
+                      )}
                       <p className="text-xs text-gray-400 mt-1">
                         {new Date(img.created_at).toLocaleDateString()}
                       </p>
@@ -513,6 +517,7 @@ export default function OfficerGalleryView({
           categoryName={selectedImage.category.name}
           uploadDate={selectedImage.created_at}
           schoolName={schoolMap.get(selectedImage.school_code)}
+          comment={selectedImage.comment}
           onPrevious={handlePreviousImage}
           onNext={handleNextImage}
           hasPrevious={selectedImageIndex !== null && selectedImageIndex > 0}

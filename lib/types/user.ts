@@ -1,6 +1,6 @@
 // User types based on school_report_images_users table
 
-export type UserRole = 'school' | 'officer' | 'admin';
+export type UserRole = 'school' | 'officer' | 'regional_officer' | 'admin';
 
 export interface SchoolReportImagesUser {
   id: string;
@@ -8,6 +8,7 @@ export interface SchoolReportImagesUser {
   email: string;
   role: UserRole;
   school_code: string | null;
+  region_id: string | null;
   full_name: string | null;
   is_active: boolean;
   created_at: string;
@@ -19,4 +20,5 @@ export interface UserWithRole {
   email: string;
   role: UserRole;
   school_code: string | null;
+  region_id: string | null;
 }

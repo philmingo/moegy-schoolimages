@@ -16,6 +16,7 @@ interface ExistingImage {
   category_id: string;
   storage_path: string;
   filename: string;
+  comment: string | null;
   created_at: string;
 }
 
@@ -47,12 +48,14 @@ export default function CategoryUploadSection({
   const [deleting, setDeleting] = useState<string | null>(null);
   const [imageToDelete, setImageToDelete] = useState<ExistingImage | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [comment, setComment] = useState('');
 
   const MAX_IMAGES = 4;
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   const canUploadMore = existingImages.length < MAX_IMAGES;
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -74,6 +77,20 @@ export default function CategoryUploadSection({
       return;
     }
 
+    setError(null);
+    setPendingFile(file);
+    setComment('');
+    e.target.value = ''; // Reset file input
+  };
+
+  const handleCancelPending = () => {
+    setPendingFile(null);
+    setComment('');
+  };
+
+  const handleUpload = async () => {
+    if (!pendingFile) return;
+
     setUploading(true);
     setError(null);
 
@@ -81,30 +98,36 @@ export default function CategoryUploadSection({
       const supabase = school_report_images_createClient();
 
       // Generate unique filename
-      const fileExt = file.name.split('.').pop();
+      const fileExt = pendingFile.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const storagePath = `${schoolCode}/${category.id}/${fileName}`;
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('school-report-images')
-        .upload(storagePath, file);
+        .upload(storagePath, pendingFile);
 
       if (uploadError) {
         throw uploadError;
       }
 
       // Insert metadata into database
+      const insertData: Record<string, string> = {
+        school_code: schoolCode,
+        category_id: category.id,
+        storage_path: storagePath,
+        filename: pendingFile.name,
+        uploaded_by_email: userEmail,
+        uploaded_by_user_id: userId,
+      };
+
+      if (comment.trim()) {
+        insertData.comment = comment.trim();
+      }
+
       const { data, error: dbError } = await supabase
         .from('school_report_images_uploaded_images')
-        .insert({
-          school_code: schoolCode,
-          category_id: category.id,
-          storage_path: storagePath,
-          filename: file.name,
-          uploaded_by_email: userEmail,
-          uploaded_by_user_id: userId,
-        })
+        .insert(insertData)
         .select()
         .single();
 
@@ -115,7 +138,8 @@ export default function CategoryUploadSection({
       }
 
       onImageUploaded(data);
-      e.target.value = ''; // Reset file input
+      setPendingFile(null);
+      setComment('');
     } catch (err: any) {
       setError(err.message || 'Failed to upload image');
     } finally {
@@ -372,12 +396,64 @@ export default function CategoryUploadSection({
                 </button>
                 <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-2 rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity">
                   <p className="truncate">{image.filename}</p>
+                  {image.comment && (
+                    <p className="truncate text-gray-300 mt-0.5">{image.comment}</p>
+                  )}
                 </div>
               </div>
             ))}
 
+            {/* Pending File Preview with Comment */}
+            {pendingFile && (
+              <div className="col-span-2 md:col-span-4 border border-blue-300 bg-blue-50 rounded-lg p-4">
+                <div className="flex gap-4 items-start">
+                  <div className="relative w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+                    <Image
+                      src={URL.createObjectURL(pendingFile)}
+                      alt={pendingFile.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{pendingFile.name}</p>
+                    <textarea
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Add a comment (optional)"
+                      rows={2}
+                      className="mt-2 w-full px-3 py-2 text-sm bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 resize-none"
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={handleUpload}
+                        disabled={uploading}
+                        className="px-4 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50 flex items-center gap-2"
+                      >
+                        {uploading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            Uploading...
+                          </>
+                        ) : (
+                          'Upload'
+                        )}
+                      </button>
+                      <button
+                        onClick={handleCancelPending}
+                        disabled={uploading}
+                        className="px-4 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-md disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Upload Slot */}
-            {canUploadMore && (
+            {canUploadMore && !pendingFile && (
               <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer flex flex-col items-center justify-center">
                 <input
                   type="file"
@@ -386,25 +462,18 @@ export default function CategoryUploadSection({
                   disabled={uploading}
                   className="hidden"
                 />
-                {uploading ? (
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                    <p className="text-sm text-gray-600">Uploading...</p>
-                  </div>
-                ) : (
-                  <div className="text-center p-4">
-                    <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    <p className="text-sm text-gray-600">Upload Image</p>
-                    <p className="text-xs text-gray-500 mt-1">JPG, PNG, WEBP</p>
-                  </div>
-                )}
+                <div className="text-center p-4">
+                  <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <p className="text-sm text-gray-600">Upload Image</p>
+                  <p className="text-xs text-gray-500 mt-1">JPG, PNG, WEBP</p>
+                </div>
               </label>
             )}
 
             {/* Empty slots */}
-            {Array.from({ length: MAX_IMAGES - existingImages.length - (canUploadMore ? 1 : 0) }).map((_, i) => (
+            {Array.from({ length: Math.max(0, MAX_IMAGES - existingImages.length - (canUploadMore && !pendingFile ? 1 : 0)) }).map((_, i) => (
               <div key={i} className="aspect-square border-2 border-dashed border-gray-200 rounded-lg bg-gray-50"></div>
             ))}
           </div>

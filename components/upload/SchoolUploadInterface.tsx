@@ -15,6 +15,7 @@ interface ExistingImage {
   category_id: string;
   storage_path: string;
   filename: string;
+  comment: string | null;
   created_at: string;
 }
 

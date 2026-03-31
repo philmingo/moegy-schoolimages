@@ -58,6 +58,9 @@ export function getMockUser(): AuthUser | null {
     case 'officer':
       email = 'officer.dev@moe.edu.gy';
       break;
+    case 'regional_officer':
+      email = 'regional.officer@moe.edu.gy';
+      break;
     case 'school':
       email = `hm.${schoolCode?.toLowerCase() || 'pr03024'}@moe.edu.gy`;
       break;
@@ -71,6 +74,7 @@ export function getMockUser(): AuthUser | null {
     role,
     schoolCode: role === 'school' ? (schoolCode || 'PR03024') : null,
     schoolName: role === 'school' ? 'Dev Test School' : null,
+    regionId: role === 'regional_officer' ? '550086ad-ceb8-4dc7-90fc-90cb3a7ad8ca' : null,
   };
 }
 
@@ -87,6 +91,9 @@ export function getMockUserForRole(role: UserRole, schoolCode?: string): AuthUse
     case 'officer':
       email = 'officer.dev@moe.edu.gy';
       break;
+    case 'regional_officer':
+      email = 'regional.officer@moe.edu.gy';
+      break;
     case 'school':
       email = `hm.${schoolCode?.toLowerCase() || 'pr03024'}@moe.edu.gy`;
       break;
@@ -100,5 +107,6 @@ export function getMockUserForRole(role: UserRole, schoolCode?: string): AuthUse
     role,
     schoolCode: role === 'school' ? (schoolCode || 'PR03024') : null,
     schoolName: role === 'school' ? `Dev ${schoolCode} School` : null,
+    regionId: role === 'regional_officer' ? '550086ad-ceb8-4dc7-90fc-90cb3a7ad8ca' : null,
   };
 }

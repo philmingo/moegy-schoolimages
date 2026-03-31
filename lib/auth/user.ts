@@ -8,6 +8,7 @@ export interface AuthUser {
   role: UserRole;
   schoolCode: string | null;
   schoolName: string | null;
+  regionId: string | null;
 }
 
 /**
@@ -36,17 +37,19 @@ export async function school_report_images_getCurrentUser(): Promise<AuthUser | 
   // Try to get role from database first
   const { data: userProfile } = await supabase
     .from('school_report_images_users')
-    .select('role, school_code')
+    .select('role, school_code, region_id')
     .eq('user_id', user.id)
     .single();
 
   let role: UserRole;
   let schoolCode: string | null = null;
+  let regionId: string | null = null;
 
   if (userProfile && userProfile.role) {
     // Use role from database
     role = userProfile.role as UserRole;
     schoolCode = userProfile.school_code;
+    regionId = userProfile.region_id;
   } else {
     // Fallback to email parsing if no database record
     role = school_report_images_getUserRole(user.email);
@@ -72,6 +75,7 @@ export async function school_report_images_getCurrentUser(): Promise<AuthUser | 
     role,
     schoolCode,
     schoolName,
+    regionId,
   };
 }
 
