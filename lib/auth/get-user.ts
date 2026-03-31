@@ -36,7 +36,7 @@ export async function school_report_images_getCurrentUser(): Promise<SchoolRepor
  * Get user role from the custom users table
  * @returns User role or null if not authenticated
  */
-export async function school_report_images_getUserRole(): Promise<'school' | 'officer' | 'admin' | null> {
+export async function school_report_images_getUserRole(): Promise<'school' | 'officer' | 'regional_officer' | 'admin' | null> {
   const user = await school_report_images_getCurrentUser();
   return user?.role || null;
 }

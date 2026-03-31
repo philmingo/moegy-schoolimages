@@ -58,8 +58,8 @@ export default function RegionalOfficerView({
   const selectedSchoolData = schools.find((s) => s.code === selectedSchool);
   const schoolImages = images.filter((img) => img.school_code === selectedSchool);
 
-  const handleImageUploaded = (newImage: ExistingImage) => {
-    setImages([...images, newImage]);
+  const handleImageUploaded = (newImage: { id: string; category_id: string; storage_path: string; filename: string; comment: string | null; created_at: string }) => {
+    setImages([...images, { ...newImage, school_code: selectedSchool }]);
   };
 
   const handleImageDeleted = (imageId: string) => {

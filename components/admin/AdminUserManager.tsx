@@ -63,6 +63,7 @@ export default function AdminUserManager({ regions }: Props) {
     if (isExpanded && users.length === 0) {
       fetchUsers();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded]);
 
   const handleRoleChange = async (user: UserRecord, newRole: string, regionId: string | null) => {
@@ -234,7 +235,7 @@ export default function AdminUserManager({ regions }: Props) {
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <h3 className="text-sm font-semibold text-gray-900 mb-3">Pre-add User</h3>
               <p className="text-xs text-gray-600 mb-3">
-                Add a user's email before they log in. They'll be auto-assigned the selected role on first login.
+                Add a user&apos;s email before they log in. They&apos;ll be auto-assigned the selected role on first login.
               </p>
               <form onSubmit={handleAddUser}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
