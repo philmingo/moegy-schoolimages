@@ -67,6 +67,10 @@ export default function RegionalOfficerView({
     setImages(images.filter((img) => img.id !== imageId));
   };
 
+  const handleImageUpdated = (updatedImage: ExistingImage) => {
+    setImages(images.map((img) => img.id === updatedImage.id ? updatedImage : img));
+  };
+
   const toggleCategory = (categoryId: string) => {
     const newExpanded = new Set(expandedCategories);
     if (newExpanded.has(categoryId)) {
@@ -236,6 +240,7 @@ export default function RegionalOfficerView({
                       userEmail={userEmail}
                       onImageUploaded={handleImageUploaded}
                       onImageDeleted={handleImageDeleted}
+                      onImageUpdated={handleImageUpdated}
                       isExpanded={isExpanded}
                       onToggle={() => toggleCategory(category.id)}
                     />

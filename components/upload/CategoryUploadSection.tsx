@@ -29,6 +29,7 @@ interface Props {
   userEmail: string;
   onImageUploaded: (image: ExistingImage) => void;
   onImageDeleted: (imageId: string) => void;
+  onImageUpdated?: (image: any) => void;
   isExpanded: boolean;
   onToggle: () => void;
 }
@@ -41,6 +42,7 @@ export default function CategoryUploadSection({
   userEmail,
   onImageUploaded,
   onImageDeleted,
+  onImageUpdated,
   isExpanded,
   onToggle,
 }: Props) {
@@ -53,6 +55,9 @@ export default function CategoryUploadSection({
   const [comment, setComment] = useState('');
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editCommentValue, setEditCommentValue] = useState('');
+  const [savingComment, setSavingComment] = useState(false);
 
   const MAX_IMAGES = 4;
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -189,6 +194,41 @@ export default function CategoryUploadSection({
       prev !== null && prev < existingImages.length - 1 ? prev + 1 : prev
     );
   }, [existingImages.length]);
+
+  const startEditComment = (image: ExistingImage) => {
+    setEditingCommentId(image.id);
+    setEditCommentValue(image.comment || '');
+  };
+
+  const cancelEditComment = () => {
+    setEditingCommentId(null);
+    setEditCommentValue('');
+  };
+
+  const saveComment = async (imageId: string) => {
+    setSavingComment(true);
+    try {
+      const res = await fetch('/api/update-comment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_id: imageId, comment: editCommentValue }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || 'Failed to update comment');
+      }
+
+      const updated = await res.json();
+      onImageUpdated?.(updated);
+      setEditingCommentId(null);
+      setEditCommentValue('');
+    } catch (err: any) {
+      setError(err.message || 'Failed to update comment');
+    } finally {
+      setSavingComment(false);
+    }
+  };
 
   const getImageUrl = (storagePath: string) => {
     const supabase = school_report_images_createClient();
@@ -397,10 +437,58 @@ export default function CategoryUploadSection({
                     )}
                   </button>
                 </div>
-                <div className="mt-1.5 min-w-0">
-                  <p className="text-xs text-slate-700 truncate" title={image.filename}>{image.filename}</p>
-                  {image.comment && (
-                    <p className="text-xs text-slate-500 truncate italic" title={image.comment}>{image.comment}</p>
+                {/* Caption + editable comment */}
+                <div className="mt-2 min-w-0">
+                  <p className="text-xs font-medium text-slate-700 truncate" title={image.filename}>{image.filename}</p>
+                  {editingCommentId === image.id ? (
+                    <div className="mt-1">
+                      <textarea
+                        value={editCommentValue}
+                        onChange={(e) => setEditCommentValue(e.target.value)}
+                        placeholder="Add a comment..."
+                        rows={2}
+                        className="w-full px-2 py-1.5 text-xs bg-white text-slate-900 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400 resize-none"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            saveComment(image.id);
+                          }
+                          if (e.key === 'Escape') cancelEditComment();
+                        }}
+                      />
+                      <div className="flex gap-1 mt-1">
+                        <button
+                          onClick={() => saveComment(image.id)}
+                          disabled={savingComment}
+                          className="px-2 py-0.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded disabled:opacity-50"
+                        >
+                          {savingComment ? '...' : 'Save'}
+                        </button>
+                        <button
+                          onClick={cancelEditComment}
+                          disabled={savingComment}
+                          className="px-2 py-0.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => startEditComment(image)}
+                      className="mt-0.5 w-full text-left group/comment"
+                    >
+                      {image.comment ? (
+                        <p className="text-xs text-slate-600 line-clamp-2 group-hover/comment:text-blue-600 transition-colors" title={image.comment}>
+                          {image.comment}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-slate-400 italic group-hover/comment:text-blue-600 transition-colors">
+                          + Add comment
+                        </p>
+                      )}
+                    </button>
                   )}
                 </div>
               </div>
