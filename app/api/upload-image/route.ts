@@ -31,14 +31,18 @@ export async function POST(request: NextRequest) {
       if (!user.regionId) {
         return NextResponse.json({ error: '[API] No region assigned' }, { status: 403 });
       }
-      const { data: school } = await supabase
+      const { data: school, error: schoolErr } = await supabase
         .from('sms_schools')
         .select('region_id')
         .eq('code', school_code)
         .single();
 
-      if (!school || school.region_id !== user.regionId) {
-        return NextResponse.json({ error: '[API] School is not in your region' }, { status: 403 });
+      console.log('[API] Region check:', { school_code, schoolRegion: school?.region_id, userRegion: user.regionId, schoolErr: schoolErr?.message });
+
+      if (!school || String(school.region_id) !== String(user.regionId)) {
+        return NextResponse.json({
+          error: `[API] School is not in your region (school_region=${school?.region_id}, user_region=${user.regionId})`
+        }, { status: 403 });
       }
     } else if (user.role !== 'admin') {
       return NextResponse.json({ error: '[API] Your role cannot upload images' }, { status: 403 });
