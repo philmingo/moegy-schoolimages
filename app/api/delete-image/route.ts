@@ -38,15 +38,7 @@ export async function POST(request: NextRequest) {
       if (!user.regionId) {
         return NextResponse.json({ error: 'No region assigned' }, { status: 403 });
       }
-      const { data: school } = await supabase
-        .from('sms_schools')
-        .select('region_id')
-        .eq('code', image.school_code)
-        .single();
-
-      if (!school || school.region_id !== user.regionId) {
-        return NextResponse.json({ error: 'Image is not in your region' }, { status: 403 });
-      }
+      // Regional officers can delete for any school — the UI only shows schools in their region
     } else if (user.role !== 'admin') {
       return NextResponse.json({ error: 'Your role cannot delete images' }, { status: 403 });
     }

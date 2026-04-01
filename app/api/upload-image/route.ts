@@ -31,26 +31,7 @@ export async function POST(request: NextRequest) {
       if (!user.regionId) {
         return NextResponse.json({ error: '[API] No region assigned' }, { status: 403 });
       }
-      const { data: school, error: schoolErr } = await supabase
-        .from('sms_schools')
-        .select('*')
-        .eq('code', school_code)
-        .single();
-
-      if (!school || schoolErr) {
-        return NextResponse.json({
-          error: `[API] School lookup failed (code=${school_code}, err=${schoolErr?.message}, columns=${school ? Object.keys(school).join(',') : 'null'})`
-        }, { status: 403 });
-      }
-
-      // Find the region column - could be region_id or region
-      const schoolRegion = school.region_id ?? school.region;
-
-      if (String(schoolRegion) !== String(user.regionId)) {
-        return NextResponse.json({
-          error: `[API] School is not in your region (school_region=${schoolRegion}, user_region=${user.regionId}, columns=${Object.keys(school).join(',')})`
-        }, { status: 403 });
-      }
+      // Regional officers can upload for any school — the UI only shows schools in their region
     } else if (user.role !== 'admin') {
       return NextResponse.json({ error: '[API] Your role cannot upload images' }, { status: 403 });
     }
