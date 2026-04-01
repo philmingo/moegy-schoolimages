@@ -33,15 +33,22 @@ export async function POST(request: NextRequest) {
       }
       const { data: school, error: schoolErr } = await supabase
         .from('sms_schools')
-        .select('region_id')
+        .select('*')
         .eq('code', school_code)
         .single();
 
-      console.log('[API] Region check:', { school_code, schoolRegion: school?.region_id, userRegion: user.regionId, schoolErr: schoolErr?.message });
-
-      if (!school || String(school.region_id) !== String(user.regionId)) {
+      if (!school || schoolErr) {
         return NextResponse.json({
-          error: `[API] School is not in your region (school_region=${school?.region_id}, user_region=${user.regionId})`
+          error: `[API] School lookup failed (code=${school_code}, err=${schoolErr?.message}, columns=${school ? Object.keys(school).join(',') : 'null'})`
+        }, { status: 403 });
+      }
+
+      // Find the region column - could be region_id or region
+      const schoolRegion = school.region_id ?? school.region;
+
+      if (String(schoolRegion) !== String(user.regionId)) {
+        return NextResponse.json({
+          error: `[API] School is not in your region (school_region=${schoolRegion}, user_region=${user.regionId}, columns=${Object.keys(school).join(',')})`
         }, { status: 403 });
       }
     } else if (user.role !== 'admin') {
