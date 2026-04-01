@@ -1,4 +1,5 @@
-import { school_report_images_createServerClient } from '@/lib/supabase/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -27,7 +28,37 @@ export async function GET(request: Request) {
   }
 
   if (code) {
-    const supabase = await school_report_images_createServerClient();
+    const cookieStore = await cookies();
+
+    // Track cookies that need to be set on the redirect response
+    const cookiesToForward: { name: string; value: string; options: any }[] = [];
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+              cookiesToForward.push({ name, value, options });
+            });
+          },
+        },
+      }
+    );
+
+    // Helper: create a redirect that carries auth cookies
+    const redirectWithCookies = (url: URL) => {
+      const response = NextResponse.redirect(url);
+      cookiesToForward.forEach(({ name, value, options }) => {
+        response.cookies.set(name, value, options);
+      });
+      return response;
+    };
 
     console.log('🔵 [AUTH CALLBACK] Exchanging code for session...');
 
@@ -43,7 +74,7 @@ export async function GET(request: Request) {
         fullError: JSON.stringify(sessionError, null, 2),
         timestamp: new Date().toISOString()
       });
-      return NextResponse.redirect(
+      return redirectWithCookies(
         new URL(`/login?error=session_error&details=${encodeURIComponent(sessionError.message || 'Session exchange failed')}`, requestUrl.origin)
       );
     }
@@ -65,7 +96,7 @@ export async function GET(request: Request) {
         fullError: JSON.stringify(userError, null, 2),
         timestamp: new Date().toISOString()
       });
-      return NextResponse.redirect(
+      return redirectWithCookies(
         new URL(`/login?error=user_error&details=${encodeURIComponent(userError.message)}`, requestUrl.origin)
       );
     }
@@ -116,7 +147,7 @@ export async function GET(request: Request) {
 
           if (claimError) {
             console.error('❌ [AUTH CALLBACK] Failed to claim pre-added profile:', claimError);
-            return NextResponse.redirect(
+            return redirectWithCookies(
               new URL(`/login?error=profile_creation_failed&email=${encodeURIComponent(user.email || '')}&details=${encodeURIComponent(claimError.message)}&code=${encodeURIComponent(claimError.code || 'UNKNOWN')}`, requestUrl.origin)
             );
           }
@@ -133,7 +164,7 @@ export async function GET(request: Request) {
 
           if (!isMoeEmail) {
             console.error('❌ [AUTH CALLBACK] Email not authorized:', { email: user.email });
-            return NextResponse.redirect(
+            return redirectWithCookies(
               new URL(`/login?error=unauthorized&email=${encodeURIComponent(user.email || '')}&details=Email domain not authorized`, requestUrl.origin)
             );
           }
@@ -154,7 +185,7 @@ export async function GET(request: Request) {
 
             if (createError) {
               console.error('❌ [AUTH CALLBACK] Failed to create admin profile:', createError);
-              return NextResponse.redirect(
+              return redirectWithCookies(
                 new URL(`/login?error=profile_creation_failed&email=${encodeURIComponent(user.email || '')}&details=${encodeURIComponent(createError.message)}`, requestUrl.origin)
               );
             }
@@ -177,7 +208,7 @@ export async function GET(request: Request) {
 
             if (createError) {
               console.error('❌ [AUTH CALLBACK] Failed to create school profile:', createError);
-              return NextResponse.redirect(
+              return redirectWithCookies(
                 new URL(`/login?error=profile_creation_failed&email=${encodeURIComponent(user.email || '')}&details=${encodeURIComponent(createError.message)}`, requestUrl.origin)
               );
             }
@@ -197,13 +228,13 @@ export async function GET(request: Request) {
 
             if (createError) {
               console.error('❌ [AUTH CALLBACK] Failed to create placeholder profile:', createError);
-              return NextResponse.redirect(
+              return redirectWithCookies(
                 new URL(`/login?error=profile_creation_failed&email=${encodeURIComponent(user.email || '')}&details=${encodeURIComponent(createError.message)}`, requestUrl.origin)
               );
             }
 
             console.log('🔵 [AUTH CALLBACK] Non-school user, redirecting to role selection...');
-            return NextResponse.redirect(new URL('/select-role', requestUrl.origin));
+            return redirectWithCookies(new URL('/select-role', requestUrl.origin));
           }
         }
       } else if (error) {
@@ -216,7 +247,7 @@ export async function GET(request: Request) {
           possibleCause: error?.code === '42P17' ? 'INFINITE RECURSION in RLS policies' : 'Unknown error',
           timestamp: new Date().toISOString()
         });
-        return NextResponse.redirect(
+        return redirectWithCookies(
           new URL(`/login?error=profile_error&email=${encodeURIComponent(user.email || '')}&details=${encodeURIComponent(error?.message || 'Database error')}&code=${encodeURIComponent(error?.code || 'UNKNOWN')}`, requestUrl.origin)
         );
       }
@@ -237,25 +268,25 @@ export async function GET(request: Request) {
         if (role === 'officer' && !userProfile.school_code && !userProfile.region_id) {
           // Could be placeholder — send to role selection
           console.log('🔵 [AUTH CALLBACK] Inactive user without role details, redirecting to /select-role...');
-          return NextResponse.redirect(new URL('/select-role', requestUrl.origin));
+          return redirectWithCookies(new URL('/select-role', requestUrl.origin));
         }
         console.log('🔵 [AUTH CALLBACK] User pending approval, redirecting to /pending-approval...');
-        return NextResponse.redirect(new URL('/pending-approval', requestUrl.origin));
+        return redirectWithCookies(new URL('/pending-approval', requestUrl.origin));
       }
 
       // Redirect based on role
       if (role === 'school') {
         console.log('🔵 [AUTH CALLBACK] Redirecting to /school...');
-        return NextResponse.redirect(new URL('/school', requestUrl.origin));
+        return redirectWithCookies(new URL('/school', requestUrl.origin));
       } else if (role === 'regional_officer') {
         console.log('🔵 [AUTH CALLBACK] Redirecting to /regional-officer...');
-        return NextResponse.redirect(new URL('/regional-officer', requestUrl.origin));
+        return redirectWithCookies(new URL('/regional-officer', requestUrl.origin));
       } else if (role === 'officer') {
         console.log('🔵 [AUTH CALLBACK] Redirecting to /officer...');
-        return NextResponse.redirect(new URL('/officer', requestUrl.origin));
+        return redirectWithCookies(new URL('/officer', requestUrl.origin));
       } else if (role === 'admin') {
         console.log('🔵 [AUTH CALLBACK] Redirecting to /admin...');
-        return NextResponse.redirect(new URL('/admin', requestUrl.origin));
+        return redirectWithCookies(new URL('/admin', requestUrl.origin));
       } else {
         // Invalid role
         console.error('❌ [AUTH CALLBACK] Invalid role:', {
@@ -263,7 +294,7 @@ export async function GET(request: Request) {
           role: role,
           timestamp: new Date().toISOString()
         });
-        return NextResponse.redirect(
+        return redirectWithCookies(
           new URL(`/login?error=unauthorized&role=${encodeURIComponent(role || 'none')}`, requestUrl.origin)
         );
       }

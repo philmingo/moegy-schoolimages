@@ -60,36 +60,46 @@ export default function LoginPage() {
       });
     }
 
-    // Check if user is already authenticated
-    const checkAuth = async () => {
-      const supabase = school_report_images_createClient();
-      const { data: { session } } = await supabase.auth.getSession();
+    // Redirect authenticated users to their dashboard
+    const supabase = school_report_images_createClient();
 
-      if (session) {
-        // User is already logged in, get their profile and redirect based on role
-        const { data: userProfile } = await supabase
-          .from('school_report_images_users')
-          .select('role, is_active')
-          .eq('user_id', session.user.id)
-          .single();
+    const redirectByRole = async (userId: string) => {
+      const { data: userProfile } = await supabase
+        .from('school_report_images_users')
+        .select('role, is_active')
+        .eq('user_id', userId)
+        .single();
 
-        if (!userProfile) {
-          router.push('/select-role');
-        } else if (!userProfile.is_active) {
-          router.push('/pending-approval');
-        } else if (userProfile.role === 'admin') {
-          router.push('/admin');
-        } else if (userProfile.role === 'regional_officer') {
-          router.push('/regional-officer');
-        } else if (userProfile.role === 'officer') {
-          router.push('/officer');
-        } else {
-          router.push('/school');
-        }
+      if (!userProfile) {
+        router.push('/select-role');
+      } else if (!userProfile.is_active) {
+        router.push('/pending-approval');
+      } else if (userProfile.role === 'admin') {
+        router.push('/admin');
+      } else if (userProfile.role === 'regional_officer') {
+        router.push('/regional-officer');
+      } else if (userProfile.role === 'officer') {
+        router.push('/officer');
+      } else {
+        router.push('/school');
       }
     };
 
-    checkAuth();
+    // Check current session on mount
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) redirectByRole(user.id);
+    });
+
+    // Also listen for auth state changes (catches the OAuth return)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          redirectByRole(session.user.id);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, [router]);
 
   const handleMicrosoftLogin = async () => {
