@@ -47,13 +47,14 @@ export default function RegionalOfficerView({
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredSchools = schools.filter((school) => {
-    if (!searchQuery) return true;
-    return (
-      school.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      school.code.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredSchools = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return schools;
+    return schools.filter((school) =>
+      school.name.toLowerCase().includes(q) ||
+      school.code.toLowerCase().includes(q)
     );
-  });
+  }, [schools, searchQuery]);
 
   const selectedSchoolData = schools.find((s) => s.code === selectedSchool);
   const schoolImages = images.filter((img) => img.school_code === selectedSchool);
@@ -171,12 +172,12 @@ export default function RegionalOfficerView({
           />
 
           <div className="overflow-y-auto max-h-[calc(100vh-200px)] -mx-1 px-1 space-y-1">
-            {filteredSchools.map((school) => {
+            {filteredSchools.map((school, index) => {
               const isSelected = selectedSchool === school.code;
 
               return (
                 <button
-                  key={school.code}
+                  key={`${school.code}-${index}`}
                   onClick={() => setSelectedSchool(school.code)}
                   className={`w-full text-left px-3 py-2.5 rounded-lg border-2 transition-colors ${
                     isSelected
