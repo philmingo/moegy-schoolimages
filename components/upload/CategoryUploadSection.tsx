@@ -111,31 +111,27 @@ export default function CategoryUploadSection({
         throw uploadError;
       }
 
-      // Insert metadata into database
-      const insertData: Record<string, string> = {
-        school_code: schoolCode,
-        category_id: category.id,
-        storage_path: storagePath,
-        filename: pendingFile.name,
-        uploaded_by_email: userEmail,
-        uploaded_by_user_id: userId,
-      };
+      // Insert metadata via server API to avoid RLS issues
+      const res = await fetch('/api/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          school_code: schoolCode,
+          category_id: category.id,
+          storage_path: storagePath,
+          filename: pendingFile.name,
+          comment: comment.trim() || undefined,
+        }),
+      });
 
-      if (comment.trim()) {
-        insertData.comment = comment.trim();
-      }
-
-      const { data, error: dbError } = await supabase
-        .from('school_report_images_uploaded_images')
-        .insert(insertData)
-        .select()
-        .single();
-
-      if (dbError) {
+      if (!res.ok) {
         // If DB insert fails, delete the uploaded file
         await supabase.storage.from('school-report-images').remove([storagePath]);
-        throw dbError;
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || 'Failed to save image record');
       }
+
+      const data = await res.json();
 
       onImageUploaded(data);
       setPendingFile(null);
@@ -159,25 +155,18 @@ export default function CategoryUploadSection({
     setError(null);
 
     try {
-      const supabase = school_report_images_createClient();
+      const res = await fetch('/api/delete-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_id: imageToDelete.id,
+          storage_path: imageToDelete.storage_path,
+        }),
+      });
 
-      // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from('school-report-images')
-        .remove([imageToDelete.storage_path]);
-
-      if (storageError) {
-        throw storageError;
-      }
-
-      // Delete from database
-      const { error: dbError } = await supabase
-        .from('school_report_images_uploaded_images')
-        .delete()
-        .eq('id', imageToDelete.id);
-
-      if (dbError) {
-        throw dbError;
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || 'Failed to delete image');
       }
 
       onImageDeleted(imageToDelete.id);
@@ -325,34 +314,34 @@ export default function CategoryUploadSection({
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${!isExpanded ? 'h-full' : ''}`}>
+    <div className={`bg-white rounded-xl border border-slate-200 transition-shadow ${!isExpanded ? 'h-full hover:shadow-md' : 'shadow-sm'}`}>
       {/* Header - Always visible, clickable to toggle */}
       <button
         onClick={onToggle}
-        className={`w-full px-4 py-3 flex items-start justify-between hover:bg-gray-50 transition-colors text-left ${!isExpanded ? 'h-full' : 'rounded-t-lg'}`}
+        className={`w-full px-4 py-3 flex items-start justify-between hover:bg-slate-50 transition-colors text-left ${!isExpanded ? 'h-full' : 'rounded-t-xl'}`}
       >
         <div className="flex-1 min-w-0 pr-2">
           <div className="flex items-center gap-2 mb-1">
             {getCategoryIcon()}
-            <h3 className="font-semibold text-gray-900 text-sm truncate">
+            <h3 className="text-sm font-semibold text-slate-900 truncate">
               {category.name}
             </h3>
-            <span className={`text-xs px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 ${
+            <span className={`text-xs px-2.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 font-medium border ${
               existingImages.length === MAX_IMAGES
-                ? 'bg-green-100 text-green-700'
+                ? 'border-green-200 bg-green-50 text-green-700'
                 : existingImages.length > 0
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-gray-100 text-gray-600'
+                ? 'border-blue-200 bg-blue-50 text-blue-700'
+                : 'border-slate-200 bg-slate-50 text-slate-500'
             }`}>
               {existingImages.length}/{MAX_IMAGES}
             </span>
           </div>
           {category.description && (
-            <p className="text-xs text-gray-600 line-clamp-2">{category.description}</p>
+            <p className="text-xs text-slate-500 line-clamp-2">{category.description}</p>
           )}
         </div>
         <svg
-          className={`w-4 h-4 text-gray-500 transition-transform flex-shrink-0 mt-0.5 ${isExpanded ? 'transform rotate-180' : ''}`}
+          className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 mt-0.5 ${isExpanded ? 'transform rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -363,7 +352,7 @@ export default function CategoryUploadSection({
 
       {/* Expandable Content */}
       {isExpanded && (
-        <div className="px-6 pb-6 border-t border-gray-100">
+        <div className="px-6 pb-6 border-t border-slate-100">
           {error && (
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
               <p className="text-sm text-red-700">{error}</p>
@@ -454,7 +443,7 @@ export default function CategoryUploadSection({
 
             {/* Upload Slot */}
             {canUploadMore && !pendingFile && (
-              <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer flex flex-col items-center justify-center">
+              <label className="aspect-square border-2 border-dashed border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer flex flex-col items-center justify-center">
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
@@ -463,18 +452,18 @@ export default function CategoryUploadSection({
                   className="hidden"
                 />
                 <div className="text-center p-4">
-                  <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-8 h-8 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  <p className="text-sm text-gray-600">Upload Image</p>
-                  <p className="text-xs text-gray-500 mt-1">JPG, PNG, WEBP</p>
+                  <p className="text-sm text-slate-600">Upload Image</p>
+                  <p className="text-xs text-slate-400 mt-1">JPG, PNG, WEBP</p>
                 </div>
               </label>
             )}
 
             {/* Empty slots */}
             {Array.from({ length: Math.max(0, MAX_IMAGES - existingImages.length - (canUploadMore && !pendingFile ? 1 : 0)) }).map((_, i) => (
-              <div key={i} className="aspect-square border-2 border-dashed border-gray-200 rounded-lg bg-gray-50"></div>
+              <div key={i} className="aspect-square border-2 border-dashed border-slate-200 rounded-lg bg-slate-50"></div>
             ))}
           </div>
 
