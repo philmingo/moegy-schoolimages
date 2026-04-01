@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { school_report_images_createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import ImageModal from '@/components/gallery/ImageModal';
 
 interface Category {
   id: string;
@@ -50,6 +51,8 @@ export default function CategoryUploadSection({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [comment, setComment] = useState('');
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const MAX_IMAGES = 4;
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -183,6 +186,26 @@ export default function CategoryUploadSection({
     setShowDeleteDialog(false);
     setImageToDelete(null);
   };
+
+  const openModal = useCallback((index: number) => {
+    setSelectedImageIndex(index);
+    setIsModalOpen(true);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setIsModalOpen(false);
+    setSelectedImageIndex(null);
+  }, []);
+
+  const goToPreviousImage = useCallback(() => {
+    setSelectedImageIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : prev));
+  }, []);
+
+  const goToNextImage = useCallback(() => {
+    setSelectedImageIndex((prev) =>
+      prev !== null && prev < existingImages.length - 1 ? prev + 1 : prev
+    );
+  }, [existingImages.length]);
 
   const getImageUrl = (storagePath: string) => {
     const supabase = school_report_images_createClient();
@@ -361,32 +384,40 @@ export default function CategoryUploadSection({
 
           {/* Image Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-            {existingImages.map((image) => (
-              <div key={image.id} className="relative group aspect-square">
-                <Image
-                  src={getImageUrl(image.storage_path)}
-                  alt={image.filename}
-                  fill
-                  className="object-cover rounded-lg"
-                />
-                <button
-                  onClick={() => handleDeleteClick(image)}
-                  disabled={deleting === image.id}
-                  className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity disabled:opacity-50"
-                  aria-label="Delete image"
+            {existingImages.map((image, index) => (
+              <div key={image.id} className="flex flex-col">
+                <div
+                  className="relative group aspect-square rounded-lg overflow-hidden cursor-pointer"
+                  onClick={() => openModal(index)}
                 >
-                  {deleting === image.id ? (
-                    <span className="block w-4 h-4">...</span>
-                  ) : (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  )}
-                </button>
-                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-2 rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                  <p className="truncate">{image.filename}</p>
+                  <Image
+                    src={getImageUrl(image.storage_path)}
+                    alt={image.filename}
+                    fill
+                    className="object-cover"
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(image);
+                    }}
+                    disabled={deleting === image.id}
+                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                    aria-label="Delete image"
+                  >
+                    {deleting === image.id ? (
+                      <span className="block w-4 h-4">...</span>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                <div className="mt-1.5 min-w-0">
+                  <p className="text-xs text-slate-700 truncate" title={image.filename}>{image.filename}</p>
                   {image.comment && (
-                    <p className="truncate text-gray-300 mt-0.5">{image.comment}</p>
+                    <p className="text-xs text-slate-500 truncate italic" title={image.comment}>{image.comment}</p>
                   )}
                 </div>
               </div>
@@ -405,13 +436,13 @@ export default function CategoryUploadSection({
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{pendingFile.name}</p>
+                    <p className="text-sm font-medium text-slate-900 truncate">{pendingFile.name}</p>
                     <textarea
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       placeholder="Add a comment (optional)"
                       rows={2}
-                      className="mt-2 w-full px-3 py-2 text-sm bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 resize-none"
+                      className="mt-2 w-full px-3 py-2 text-sm bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400 resize-none"
                     />
                     <div className="flex gap-2 mt-2">
                       <button
@@ -431,7 +462,7 @@ export default function CategoryUploadSection({
                       <button
                         onClick={handleCancelPending}
                         disabled={uploading}
-                        className="px-4 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-md disabled:opacity-50"
+                        className="px-4 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg disabled:opacity-50"
                       >
                         Cancel
                       </button>
@@ -487,6 +518,23 @@ export default function CategoryUploadSection({
         variant="danger"
         isLoading={deleting !== null}
       />
+
+      {/* Image Preview Modal */}
+      {selectedImageIndex !== null && existingImages[selectedImageIndex] && (
+        <ImageModal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          imageUrl={getImageUrl(existingImages[selectedImageIndex].storage_path)}
+          imageName={existingImages[selectedImageIndex].filename}
+          categoryName={category.name}
+          uploadDate={existingImages[selectedImageIndex].created_at}
+          comment={existingImages[selectedImageIndex].comment}
+          onPrevious={goToPreviousImage}
+          onNext={goToNextImage}
+          hasPrevious={selectedImageIndex > 0}
+          hasNext={selectedImageIndex < existingImages.length - 1}
+        />
+      )}
     </div>
   );
 }

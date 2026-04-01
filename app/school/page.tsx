@@ -39,7 +39,7 @@ export default async function SchoolPage() {
     .eq('school_code', user.schoolCode);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <DashboardHeaderWrapper
         title={user.schoolName || user.schoolCode}
@@ -51,10 +51,10 @@ export default async function SchoolPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
             Upload Incident Report Images
           </h2>
-          <p className="text-gray-600">
+          <p className="text-slate-600">
             Upload up to 4 images per category. Accepted formats: JPG, PNG, WEBP (max 10MB each)
           </p>
         </div>

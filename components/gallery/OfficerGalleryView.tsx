@@ -215,21 +215,21 @@ export default function OfficerGalleryView({
   return (
     <div>
       {/* Category Tabs */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
         <div className="overflow-x-auto">
-          <div className="flex border-b border-gray-200 min-w-max">
+          <div className="flex border-b border-slate-200 min-w-max">
             {/* All Categories Tab */}
             <button
               onClick={() => setActiveTab('all')}
               className={`px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors relative ${
                 activeTab === 'all'
                   ? 'text-blue-600 bg-blue-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
               All Categories
               <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                activeTab === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
+                activeTab === 'all' ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'
               }`}>
                 {categoryCounts.all || 0}
               </span>
@@ -246,12 +246,12 @@ export default function OfficerGalleryView({
                 className={`px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors relative ${
                   activeTab === category.id
                     ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
                 {category.name}
                 <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                  activeTab === category.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
+                  activeTab === category.id ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'
                 }`}>
                   {categoryCounts[category.id] || 0}
                 </span>
@@ -265,11 +265,11 @@ export default function OfficerGalleryView({
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Search */}
           <div>
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="search" className="block text-sm font-medium text-slate-700 mb-1">
               Search
             </label>
             <input
@@ -278,21 +278,21 @@ export default function OfficerGalleryView({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="School name, code, or filename..."
-              className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-500"
+              className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-500"
             />
           </div>
 
           {/* Region Filter */}
           {regions.length > 0 && (
             <div>
-              <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="region" className="block text-sm font-medium text-slate-700 mb-1">
                 Filter by Region
               </label>
               <select
                 id="region"
                 value={selectedRegion}
                 onChange={(e) => setSelectedRegion(e.target.value)}
-                className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Regions ({regions.length})</option>
                 {regions.map((region) => (
@@ -307,14 +307,14 @@ export default function OfficerGalleryView({
           {/* School Level Filter */}
           {schoolLevels.length > 0 && (
             <div>
-              <label htmlFor="schoolLevel" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="schoolLevel" className="block text-sm font-medium text-slate-700 mb-1">
                 Filter by Level
               </label>
               <select
                 id="schoolLevel"
                 value={selectedSchoolLevel}
                 onChange={(e) => setSelectedSchoolLevel(e.target.value)}
-                className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Levels ({schoolLevels.length})</option>
                 {schoolLevels.map((level) => (
@@ -328,14 +328,14 @@ export default function OfficerGalleryView({
 
           {/* School Filter */}
           <div>
-            <label htmlFor="school" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="school" className="block text-sm font-medium text-slate-700 mb-1">
               Filter by School
             </label>
             <select
               id="school"
               value={selectedSchool}
               onChange={(e) => setSelectedSchool(e.target.value)}
-              className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Schools ({schoolCodes.length})</option>
               {schoolCodes.map((code) => (
@@ -347,11 +347,11 @@ export default function OfficerGalleryView({
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+        <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
           <p>
             Showing <span className="font-semibold">{filteredImages.length}</span> image{filteredImages.length !== 1 ? 's' : ''}
             {activeTab !== 'all' && (
-              <span className="text-gray-500"> in {categories.find(c => c.id === activeTab)?.name}</span>
+              <span className="text-slate-500"> in {categories.find(c => c.id === activeTab)?.name}</span>
             )}
           </p>
           {(selectedSchool !== 'all' || selectedRegion !== 'all' || selectedSchoolLevel !== 'all' || searchQuery !== '') && (
@@ -372,22 +372,22 @@ export default function OfficerGalleryView({
 
       {/* Images Grid */}
       {filteredImages.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-12 text-center">
-          <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
+          <svg className="w-16 h-16 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <p className="text-gray-500 text-lg">No images found</p>
-          <p className="text-gray-400 text-sm mt-1">Try adjusting your filters</p>
+          <p className="text-slate-500 text-lg">No images found</p>
+          <p className="text-slate-400 text-sm mt-1">Try adjusting your filters</p>
         </div>
       ) : (
         <>
           {/* Masonry Grid */}
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
               {paginatedImages.map((img) => (
                 <div
                   key={img.id}
-                  className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+                  className="group relative aspect-square bg-slate-100 rounded-lg overflow-hidden cursor-pointer shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
                   onClick={() => handleImageClick(img)}
                 >
                   <Image
@@ -440,12 +440,12 @@ export default function OfficerGalleryView({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="bg-white rounded-lg shadow-md p-4 mt-6">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mt-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-slate-600">
                   Page <span className="font-semibold">{currentPage}</span> of{' '}
                   <span className="font-semibold">{totalPages}</span>
-                  <span className="text-gray-500 ml-2">
+                  <span className="text-slate-500 ml-2">
                     ({(currentPage - 1) * IMAGES_PER_PAGE + 1}-
                     {Math.min(currentPage * IMAGES_PER_PAGE, filteredImages.length)} of{' '}
                     {filteredImages.length})
@@ -456,7 +456,7 @@ export default function OfficerGalleryView({
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronLeft size={16} />
                     Previous
@@ -483,7 +483,7 @@ export default function OfficerGalleryView({
                           className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                             currentPage === pageNum
                               ? 'bg-blue-600 text-white'
-                              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                              : 'text-slate-700 bg-white border border-slate-300 hover:bg-slate-50'
                           }`}
                         >
                           {pageNum}
@@ -495,7 +495,7 @@ export default function OfficerGalleryView({
                   <button
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
-                    className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Next
                     <ChevronRight size={16} />

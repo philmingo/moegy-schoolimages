@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { LogOut, User } from 'lucide-react';
 
 interface DashboardHeaderProps {
   title: string;
@@ -17,50 +18,74 @@ export default function DashboardHeader({
   userEmail,
   onSignOut,
 }: DashboardHeaderProps) {
+  const initials = userName
+    ? userName
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : null;
+
   return (
-    <header className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center justify-between">
+    <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
           {/* Left side: Logo and Title */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             {/* MOE Logo */}
-            <div className="flex-shrink-0 bg-white rounded-lg p-2 shadow-md">
+            <div className="flex-shrink-0">
               <Image
                 src="/moe-logo.png"
-                alt="Ministry of Education Singapore"
-                width={48}
-                height={48}
+                alt="Ministry of Education Logo"
+                width={36}
+                height={36}
                 className="object-contain"
                 priority
               />
             </div>
 
+            {/* Vertical divider */}
+            <div className="border-l border-slate-200 h-8" />
+
             {/* Title and Subtitle */}
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              <h1 className="text-base font-semibold text-slate-900 leading-tight">
                 {title}
               </h1>
-              <p className="text-blue-100 text-sm mt-1">
+              <p className="text-xs text-slate-500">
                 {subtitle}
               </p>
             </div>
           </div>
 
           {/* Right side: User info and Sign Out */}
-          <div className="flex items-center space-x-4">
-            {/* User info (hidden on mobile) */}
+          <div className="flex items-center space-x-3">
+            {/* User info */}
             {(userName || userEmail) && (
-              <div className="hidden md:block text-right">
-                {userName && (
-                  <p className="text-white font-medium text-sm">
-                    {userName}
-                  </p>
-                )}
-                {userEmail && (
-                  <p className="text-blue-100 text-xs">
-                    {userEmail}
-                  </p>
-                )}
+              <div className="hidden md:flex items-center space-x-3">
+                {/* User avatar */}
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
+                  {initials ? (
+                    <span className="text-xs font-medium text-slate-600">
+                      {initials}
+                    </span>
+                  ) : (
+                    <User className="w-4 h-4 text-slate-400" />
+                  )}
+                </div>
+                <div className="text-right">
+                  {userName && (
+                    <p className="text-sm font-medium text-slate-900 leading-tight">
+                      {userName}
+                    </p>
+                  )}
+                  {userEmail && (
+                    <p className="text-xs text-slate-500">
+                      {userEmail}
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -68,9 +93,10 @@ export default function DashboardHeader({
             {onSignOut && (
               <button
                 onClick={onSignOut}
-                className="px-4 py-2 text-sm font-medium text-blue-700 bg-white hover:bg-blue-50 rounded-lg shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105"
+                className="flex items-center space-x-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors duration-150"
               >
-                Sign Out
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Sign Out</span>
               </button>
             )}
           </div>

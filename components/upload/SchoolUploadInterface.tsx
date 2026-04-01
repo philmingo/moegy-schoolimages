@@ -55,8 +55,30 @@ export default function SchoolUploadInterface({
     setExpandedCategories(newExpanded);
   };
 
+  const totalUploaded = images.length;
+  const totalPossible = categories.length * 4;
+  const categoriesWithImages = new Set(images.map((img) => img.category_id)).size;
+  const progressPercent = totalPossible > 0 ? Math.round((totalUploaded / totalPossible) * 100) : 0;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+    <div>
+      {/* Progress Summary */}
+      {categories.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+          <h3 className="text-sm font-semibold text-slate-900 mb-3">Upload Progress</h3>
+          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-blue-600 transition-all duration-300"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <p className="text-sm text-slate-600 mt-2">
+            {totalUploaded} of {totalPossible} images uploaded across {categoriesWithImages} categor{categoriesWithImages === 1 ? 'y' : 'ies'}
+          </p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {categories.map((category) => {
         const categoryImages = images.filter(
           (img) => img.category_id === category.id
@@ -84,12 +106,13 @@ export default function SchoolUploadInterface({
       })}
 
       {categories.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-lg border-2 border-dashed border-gray-300">
-          <p className="text-gray-500">
+        <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed border-slate-300">
+          <p className="text-slate-500">
             No categories available. Please contact an administrator.
           </p>
         </div>
       )}
+      </div>
     </div>
   );
 }

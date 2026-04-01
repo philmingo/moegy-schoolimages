@@ -1,11 +1,8 @@
-import { school_report_images_getCurrentUser, school_report_images_requireRole } from '@/lib/auth/user';
+import { school_report_images_requireRole } from '@/lib/auth/user';
 import { school_report_images_createServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import AdminCategoryManager from '@/components/admin/AdminCategoryManager';
-import AdminUserManager from '@/components/admin/AdminUserManager';
 import DashboardHeaderWrapper from '@/components/layout/DashboardHeaderWrapper';
-import AdminImageListView from '@/components/admin/AdminImageListView';
-import OfficerGalleryView from '@/components/gallery/OfficerGalleryView';
+import AdminDashboard from '@/components/admin/AdminDashboard';
 import { SCHOOL_LEVELS, REGIONS, SCHOOL_LEVEL_MAP, REGION_MAP } from '@/lib/constants/school-data';
 
 export default async function AdminPage() {
@@ -89,7 +86,7 @@ export default async function AdminPage() {
   const schoolLevels = SCHOOL_LEVELS.filter(l => usedLevelIds.has(l.id)).sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <DashboardHeaderWrapper
         title="Admin Dashboard"
@@ -98,43 +95,19 @@ export default async function AdminPage() {
         userEmail={user.email}
       />
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-sm text-gray-600 mb-1">Total Categories</p>
-            <p className="text-3xl font-bold text-gray-900">{categories?.length || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-sm text-gray-600 mb-1">Total Images</p>
-            <p className="text-3xl font-bold text-gray-900">{totalImages || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-sm text-gray-600 mb-1">Schools with Images</p>
-            <p className="text-3xl font-bold text-gray-900">{uniqueSchools}</p>
-          </div>
-        </div>
-
-        {/* Category Management */}
-        <AdminCategoryManager categories={categories || []} />
-
-        {/* User Management */}
-        <AdminUserManager regions={REGIONS} />
-
-        {/* Images by School List */}
-        <div className="mt-8">
-          <AdminImageListView
-            images={allImages || []}
-            schoolMap={schoolMap}
-            schoolDataMap={schoolDataMap}
-            regions={regions}
-            schoolLevels={schoolLevels}
-            categories={categories || []}
-            canDelete={true}
-          />
-        </div>
-      </main>
+      {/* Tab Navigation + Content */}
+      <AdminDashboard
+        categories={categories || []}
+        activeCategories={activeCategories || []}
+        images={allImages || []}
+        schoolMap={Object.fromEntries(schoolMap)}
+        schoolDataMap={Object.fromEntries(schoolDataMap)}
+        regions={regions}
+        schoolLevels={schoolLevels}
+        allRegions={REGIONS}
+        totalImages={totalImages || 0}
+        uniqueSchools={uniqueSchools}
+      />
     </div>
   );
 }

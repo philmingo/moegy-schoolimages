@@ -25,7 +25,6 @@ export default function AdminCategoryManager({ categories: initialCategories }: 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -177,30 +176,14 @@ export default function AdminCategoryManager({ categories: initialCategories }: 
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md">
-      <div
-        className="p-6 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+      <div className="p-6 border-b border-slate-200">
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold text-gray-900">Category Management</h2>
-            <svg
-              className={`w-5 h-5 text-gray-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          {isExpanded && !isCreating && !editingId && (
+          <h2 className="text-xl font-semibold text-slate-900">Category Management</h2>
+          {!isCreating && !editingId && (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsCreating(true);
-              }}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium"
+              onClick={() => setIsCreating(true)}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm"
             >
               + New Category
             </button>
@@ -209,14 +192,14 @@ export default function AdminCategoryManager({ categories: initialCategories }: 
       </div>
 
       {/* Create/Edit Form */}
-      {isExpanded && (isCreating || editingId) && (
-        <div className="p-6 border-b border-gray-200 bg-blue-50">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      {(isCreating || editingId) && (
+        <div className="p-6 border-b border-slate-200 bg-blue-50">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">
             {editingId ? 'Edit Category' : 'Create New Category'}
           </h3>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
@@ -224,7 +207,7 @@ export default function AdminCategoryManager({ categories: initialCategories }: 
           <form onSubmit={editingId ? handleUpdate : handleCreate}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">
                   Name *
                 </label>
                 <input
@@ -233,12 +216,12 @@ export default function AdminCategoryManager({ categories: initialCategories }: 
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label htmlFor="display_order" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="display_order" className="block text-sm font-medium text-slate-700 mb-1">
                   Display Order
                 </label>
                 <input
@@ -246,13 +229,13 @@ export default function AdminCategoryManager({ categories: initialCategories }: 
                   type="number"
                   value={formData.display_order}
                   onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) })}
-                  className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
 
             <div className="mb-4">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-1">
                 Description
               </label>
               <textarea
@@ -260,7 +243,7 @@ export default function AdminCategoryManager({ categories: initialCategories }: 
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
-                className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -270,9 +253,9 @@ export default function AdminCategoryManager({ categories: initialCategories }: 
                   type="checkbox"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="ml-2 text-sm text-gray-700">Active (visible to schools)</span>
+                <span className="ml-2 text-sm text-slate-700">Active (visible to schools)</span>
               </label>
             </div>
 
@@ -280,14 +263,14 @@ export default function AdminCategoryManager({ categories: initialCategories }: 
               <button
                 type="submit"
                 disabled={loading !== null}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white rounded-md font-medium"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white rounded-lg font-medium"
               >
                 {loading ? 'Saving...' : editingId ? 'Update Category' : 'Create Category'}
               </button>
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md font-medium"
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-medium"
               >
                 Cancel
               </button>
@@ -297,56 +280,54 @@ export default function AdminCategoryManager({ categories: initialCategories }: 
       )}
 
       {/* Categories List */}
-      {isExpanded && (
-        <div className="p-6">
-          {categories.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No categories yet. Create one to get started.</p>
-          ) : (
-            <div className="space-y-3">
-              {categories
-                .sort((a, b) => a.display_order - b.display_order)
-                .map((category) => (
-                <div
-                  key={category.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-gray-900">{category.name}</h3>
-                      <span className="text-xs text-gray-500">#{category.display_order}</span>
-                      {!category.is_active && (
-                        <span className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded">
-                          Inactive
-                        </span>
-                      )}
-                    </div>
-                    {category.description && (
-                      <p className="text-sm text-gray-600 mt-1">{category.description}</p>
+      <div className="p-6">
+        {categories.length === 0 ? (
+          <p className="text-slate-500 text-center py-8">No categories yet. Create one to get started.</p>
+        ) : (
+          <div className="space-y-3">
+            {categories
+              .sort((a, b) => a.display_order - b.display_order)
+              .map((category) => (
+              <div
+                key={category.id}
+                className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50"
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-slate-900">{category.name}</h3>
+                    <span className="text-xs text-slate-500">#{category.display_order}</span>
+                    {!category.is_active && (
+                      <span className="px-2 py-1 text-xs bg-slate-200 text-slate-700 rounded-lg">
+                        Inactive
+                      </span>
                     )}
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleEdit(category)}
-                      disabled={loading !== null}
-                      className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 disabled:opacity-50"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(category.id)}
-                      disabled={loading !== null}
-                      className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200 disabled:opacity-50"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  {category.description && (
+                    <p className="text-sm text-slate-600 mt-1">{category.description}</p>
+                  )}
                 </div>
-                ))}
-            </div>
-          )}
-        </div>
-      )}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleEdit(category)}
+                    disabled={loading !== null}
+                    className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 disabled:opacity-50"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(category.id)}
+                    disabled={loading !== null}
+                    className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+              ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -266,26 +266,26 @@ export default function AdminImageListView({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b border-slate-200">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-slate-900">
             Images by School
-            <span className="ml-2 text-sm font-normal text-gray-600">
+            <span className="ml-2 text-sm font-normal text-slate-600">
               ({filteredSchools.length} school{filteredSchools.length !== 1 ? 's' : ''})
             </span>
           </h2>
           <div className="flex gap-2">
             <button
               onClick={expandAll}
-              className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+              className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
             >
               Expand All
             </button>
             <button
               onClick={collapseAll}
-              className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+              className="px-3 py-1 text-sm bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300"
             >
               Collapse All
             </button>
@@ -296,7 +296,7 @@ export default function AdminImageListView({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           {/* Search */}
           <div>
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="search" className="block text-sm font-medium text-slate-700 mb-1">
               Search
             </label>
             <input
@@ -305,21 +305,21 @@ export default function AdminImageListView({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="School name or code..."
-              className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-500"
+              className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-500"
             />
           </div>
 
           {/* Category Filter */}
           {categories.length > 0 && (
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-1">
                 Filter by Category
               </label>
               <select
                 id="category"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Categories ({categories.length})</option>
                 {categories.map((category) => (
@@ -334,14 +334,14 @@ export default function AdminImageListView({
           {/* Region Filter */}
           {regions.length > 0 && (
             <div>
-              <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="region" className="block text-sm font-medium text-slate-700 mb-1">
                 Filter by Region
               </label>
               <select
                 id="region"
                 value={selectedRegion}
                 onChange={(e) => setSelectedRegion(e.target.value)}
-                className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Regions ({regions.length})</option>
                 {regions.map((region) => (
@@ -356,14 +356,14 @@ export default function AdminImageListView({
           {/* School Level Filter */}
           {schoolLevels.length > 0 && (
             <div>
-              <label htmlFor="schoolLevel" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="schoolLevel" className="block text-sm font-medium text-slate-700 mb-1">
                 Filter by Level
               </label>
               <select
                 id="schoolLevel"
                 value={selectedSchoolLevel}
                 onChange={(e) => setSelectedSchoolLevel(e.target.value)}
-                className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Levels ({schoolLevels.length})</option>
                 {schoolLevels.map((level) => (
@@ -401,7 +401,7 @@ export default function AdminImageListView({
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : filteredSchools.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No schools found</p>
+          <p className="text-slate-500 text-center py-8">No schools found</p>
         ) : (
           <div className="space-y-3">
             {filteredSchools.map((schoolCode) => {
@@ -409,15 +409,15 @@ export default function AdminImageListView({
               const isExpanded = expandedSchools.has(schoolCode);
 
               return (
-                <div key={schoolCode} className="border border-gray-200 rounded-lg overflow-hidden">
+                <div key={schoolCode} className="border border-slate-200 rounded-xl overflow-hidden">
                   {/* School Header */}
                   <div
-                    className="flex items-center justify-between p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="flex items-center justify-between p-4 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
                     onClick={() => toggleSchool(schoolCode)}
                   >
                     <div className="flex items-center gap-3 flex-1">
                       <svg
-                        className={`w-5 h-5 text-gray-600 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                        className={`w-5 h-5 text-slate-600 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -425,14 +425,14 @@ export default function AdminImageListView({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">
+                        <h3 className="font-semibold text-slate-900">
                           {schoolMap.get(schoolCode) || 'Unknown School'}
                         </h3>
                         <div className="flex items-center gap-2 mt-1">
-                          <p className="text-sm text-gray-600">{schoolCode}</p>
+                          <p className="text-sm text-slate-600">{schoolCode}</p>
                           {schoolDataMap?.get(schoolCode)?.region && (
                             <>
-                              <span className="text-gray-400">•</span>
+                              <span className="text-slate-400">•</span>
                               <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
                                 {schoolDataMap.get(schoolCode)?.region?.name}
                               </span>
@@ -440,7 +440,7 @@ export default function AdminImageListView({
                           )}
                           {schoolDataMap?.get(schoolCode)?.schoolLevel && (
                             <>
-                              <span className="text-gray-400">•</span>
+                              <span className="text-slate-400">•</span>
                               <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded">
                                 {schoolDataMap.get(schoolCode)?.schoolLevel?.name}
                               </span>
@@ -458,13 +458,13 @@ export default function AdminImageListView({
                   {isExpanded && (
                     <div className="p-4 bg-white">
                       {schoolImages.length === 0 ? (
-                        <p className="text-gray-500 text-center py-4">No images</p>
+                        <p className="text-slate-500 text-center py-4">No images</p>
                       ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                           {schoolImages.map((img) => (
                             <div
                               key={img.id}
-                              className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200"
+                              className="group relative aspect-square bg-slate-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200"
                             >
                               <div
                                 className="absolute inset-0 cursor-pointer"
@@ -521,14 +521,14 @@ export default function AdminImageListView({
 
         {/* Pagination Controls */}
         {!loading && totalPages > 1 && (
-          <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-4">
+            <div className="flex items-center gap-2 text-sm text-slate-600">
               <span>
                 Page {currentPage} of {totalPages}
               </span>
-              <span className="text-gray-400">•</span>
+              <span className="text-slate-400">•</span>
               <span>{totalSchools} school{totalSchools !== 1 ? 's' : ''}</span>
-              <span className="text-gray-400">•</span>
+              <span className="text-slate-400">•</span>
               <span>{totalImages} image{totalImages !== 1 ? 's' : ''} on this page</span>
             </div>
 
@@ -536,7 +536,7 @@ export default function AdminImageListView({
               <button
                 onClick={() => fetchImages(currentPage - 1, selectedCategory)}
                 disabled={currentPage === 1}
-                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white flex items-center gap-1"
+                className="px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white flex items-center gap-1"
               >
                 <ChevronLeft size={16} />
                 Previous
@@ -563,7 +563,7 @@ export default function AdminImageListView({
                       className={`px-3 py-2 text-sm font-medium rounded-md ${
                         currentPage === pageNum
                           ? 'bg-blue-600 text-white'
-                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                          : 'text-slate-700 bg-white border border-slate-300 hover:bg-slate-50'
                       }`}
                     >
                       {pageNum}
@@ -575,7 +575,7 @@ export default function AdminImageListView({
               <button
                 onClick={() => fetchImages(currentPage + 1, selectedCategory)}
                 disabled={currentPage === totalPages}
-                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white flex items-center gap-1"
+                className="px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white flex items-center gap-1"
               >
                 Next
                 <ChevronRight size={16} />

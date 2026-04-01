@@ -79,7 +79,7 @@ export default async function OfficerPage() {
   const schoolLevels = SCHOOL_LEVELS.filter(l => usedLevelIds.has(l.id)).sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <DashboardHeaderWrapper
         title="Officer Dashboard"
@@ -92,13 +92,13 @@ export default async function OfficerPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-sm text-gray-600 mb-1">Total Images</p>
-            <p className="text-3xl font-bold text-gray-900">{totalImages || 0}</p>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <p className="text-sm font-medium text-slate-500 mb-1">Total Images</p>
+            <p className="text-3xl font-bold text-slate-900">{totalImages || 0}</p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-sm text-gray-600 mb-1">Schools with Images</p>
-            <p className="text-3xl font-bold text-gray-900">{uniqueSchools}</p>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <p className="text-sm font-medium text-slate-500 mb-1">Schools with Images</p>
+            <p className="text-3xl font-bold text-slate-900">{uniqueSchools}</p>
           </div>
         </div>
 

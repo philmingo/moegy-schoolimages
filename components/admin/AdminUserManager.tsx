@@ -32,7 +32,6 @@ export default function AdminUserManager({ regions }: Props) {
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -60,11 +59,9 @@ export default function AdminUserManager({ regions }: Props) {
   };
 
   useEffect(() => {
-    if (isExpanded && users.length === 0) {
-      fetchUsers();
-    }
+    fetchUsers();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isExpanded]);
+  }, []);
 
   const pendingUsers = useMemo(() => users.filter((u) => !u.is_active && u.user_id), [users]);
 
@@ -234,264 +231,245 @@ export default function AdminUserManager({ regions }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md mt-8">
-      <div
-        className="p-6 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+      <div className="p-6 border-b border-slate-200">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold text-gray-900">User Management</h2>
+            <h2 className="text-xl font-semibold text-slate-900">User Management</h2>
             {pendingUsers.length > 0 && (
               <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">
                 {pendingUsers.length} pending
               </span>
             )}
-            <svg
-              className={`w-5 h-5 text-gray-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
           </div>
-          {isExpanded && !showAddForm && (
+          {!showAddForm && (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowAddForm(true);
-              }}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium text-sm"
+              onClick={() => setShowAddForm(true)}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm"
             >
               + Pre-add User
             </button>
           )}
-          {!isExpanded && (
-            <span className="text-sm text-gray-500">Manage user roles and approvals</span>
-          )}
         </div>
       </div>
 
-      {isExpanded && (
-        <div className="p-6">
-          {/* Status Messages */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          )}
-          {success && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-sm text-green-700">{success}</p>
-            </div>
-          )}
+      <div className="p-6">
+        {/* Status Messages */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
+        {success && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-700">{success}</p>
+          </div>
+        )}
 
-          {/* Pending Approvals */}
-          {pendingUsers.length > 0 && (
-            <div className="mb-6 border-2 border-amber-300 bg-amber-50 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-amber-900 mb-3 flex items-center gap-2">
-                <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Pending Approval ({pendingUsers.length})
-              </h3>
-              <div className="space-y-2">
-                {pendingUsers.map((user) => {
-                  const regionName = user.region_id
-                    ? regions.find((r) => r.id === user.region_id)?.name
-                    : null;
+        {/* Pending Approvals */}
+        {pendingUsers.length > 0 && (
+          <div className="mb-6 border-2 border-amber-300 bg-amber-50 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-amber-900 mb-3 flex items-center gap-2">
+              <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Pending Approval ({pendingUsers.length})
+            </h3>
+            <div className="space-y-2">
+              {pendingUsers.map((user) => {
+                const regionName = user.region_id
+                  ? regions.find((r) => r.id === user.region_id)?.name
+                  : null;
 
-                  return (
-                    <div key={user.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-amber-200">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-medium text-gray-900 text-sm truncate">{user.email}</p>
-                          <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getRoleBadgeColor(user.role)}`}>
-                            {getRoleLabel(user.role)}
+                return (
+                  <div key={user.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-amber-200">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium text-slate-900 text-sm truncate">{user.email}</p>
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getRoleBadgeColor(user.role)}`}>
+                          {getRoleLabel(user.role)}
+                        </span>
+                        {regionName && (
+                          <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700">
+                            {regionName}
                           </span>
-                          {regionName && (
-                            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700">
-                              {regionName}
-                            </span>
-                          )}
-                        </div>
-                        {user.full_name && (
-                          <p className="text-xs text-gray-600 mt-0.5">{user.full_name}</p>
                         )}
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          Requested {new Date(user.created_at).toLocaleDateString()}
-                        </p>
                       </div>
-                      <div className="flex gap-2 flex-shrink-0 ml-3">
-                        <button
-                          onClick={() => handleApprove(user)}
-                          disabled={saving === user.id}
-                          className="px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-                        >
-                          {saving === user.id ? '...' : 'Approve'}
-                        </button>
-                        <button
-                          onClick={() => handleDeny(user)}
-                          disabled={saving === user.id}
-                          className="px-3 py-1.5 text-sm font-medium bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-                        >
-                          Deny
-                        </button>
-                      </div>
+                      {user.full_name && (
+                        <p className="text-xs text-slate-600 mt-0.5">{user.full_name}</p>
+                      )}
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Requested {new Date(user.created_at).toLocaleDateString()}
+                      </p>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Pre-add User Form */}
-          {showAddForm && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Pre-add User</h3>
-              <p className="text-xs text-gray-600 mb-3">
-                Add a user&apos;s email before they log in. They&apos;ll be auto-assigned the selected role on first login (no approval needed).
-              </p>
-              <form onSubmit={handleAddUser}>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                  <div>
-                    <label htmlFor="addEmail" className="block text-xs font-medium text-gray-700 mb-1">
-                      Email *
-                    </label>
-                    <input
-                      id="addEmail"
-                      type="email"
-                      required
-                      value={addEmail}
-                      onChange={(e) => setAddEmail(e.target.value)}
-                      placeholder="user@moe.edu.gy"
-                      className="w-full px-3 py-2 text-sm bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="addRole" className="block text-xs font-medium text-gray-700 mb-1">
-                      Role *
-                    </label>
-                    <select
-                      id="addRole"
-                      value={addRole}
-                      onChange={(e) => setAddRole(e.target.value)}
-                      className="w-full px-3 py-2 text-sm bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="regional_officer">Regional Officer</option>
-                      <option value="officer">Education Officer</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </div>
-                  {addRole === 'regional_officer' && (
-                    <div>
-                      <label htmlFor="addRegion" className="block text-xs font-medium text-gray-700 mb-1">
-                        Region *
-                      </label>
-                      <select
-                        id="addRegion"
-                        value={addRegion}
-                        onChange={(e) => setAddRegion(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 text-sm bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    <div className="flex gap-2 flex-shrink-0 ml-3">
+                      <button
+                        onClick={() => handleApprove(user)}
+                        disabled={saving === user.id}
+                        className="px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                       >
-                        <option value="">Select Region...</option>
-                        {regions.map((region) => (
-                          <option key={region.id} value={region.id}>
-                            {region.name}
-                          </option>
-                        ))}
-                      </select>
+                        {saving === user.id ? '...' : 'Approve'}
+                      </button>
+                      <button
+                        onClick={() => handleDeny(user)}
+                        disabled={saving === user.id}
+                        className="px-3 py-1.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                      >
+                        Deny
+                      </button>
                     </div>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    disabled={adding || (addRole === 'regional_officer' && !addRegion)}
-                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
-                  >
-                    {adding ? 'Adding...' : 'Add User'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowAddForm(false);
-                      setAddEmail('');
-                      setAddRole('regional_officer');
-                      setAddRegion('');
-                    }}
-                    className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 font-medium"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label htmlFor="userSearch" className="block text-sm font-medium text-gray-700 mb-1">
-                Search Users
-              </label>
-              <input
-                id="userSearch"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Email, name, or school code..."
-                className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
-              />
-            </div>
-            <div>
-              <label htmlFor="roleFilter" className="block text-sm font-medium text-gray-700 mb-1">
-                Filter by Role
-              </label>
-              <select
-                id="roleFilter"
-                value={filterRole}
-                onChange={(e) => setFilterRole(e.target.value)}
-                className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Roles</option>
-                <option value="admin">Admin</option>
-                <option value="regional_officer">Regional Officer</option>
-                <option value="officer">Education Officer</option>
-                <option value="school">School</option>
-              </select>
+                  </div>
+                );
+              })}
             </div>
           </div>
+        )}
 
-          {/* Active Users List */}
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-          ) : filteredUsers.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No users found</p>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-gray-600 mb-2">
-                Showing {filteredUsers.length} active users
-              </p>
-              {filteredUsers.map((user) => (
-                <UserRow
-                  key={user.id}
-                  user={user}
-                  regions={regions}
-                  saving={saving === user.id}
-                  onRoleChange={handleRoleChange}
-                  getRoleBadgeColor={getRoleBadgeColor}
-                  getRoleLabel={getRoleLabel}
-                />
-              ))}
-            </div>
-          )}
+        {/* Pre-add User Form */}
+        {showAddForm && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="text-sm font-semibold text-slate-900 mb-3">Pre-add User</h3>
+            <p className="text-xs text-slate-600 mb-3">
+              Add a user&apos;s email before they log in. They&apos;ll be auto-assigned the selected role on first login (no approval needed).
+            </p>
+            <form onSubmit={handleAddUser}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                <div>
+                  <label htmlFor="addEmail" className="block text-xs font-medium text-slate-700 mb-1">
+                    Email *
+                  </label>
+                  <input
+                    id="addEmail"
+                    type="email"
+                    required
+                    value={addEmail}
+                    onChange={(e) => setAddEmail(e.target.value)}
+                    placeholder="user@moe.edu.gy"
+                    className="w-full px-3 py-2 text-sm bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="addRole" className="block text-xs font-medium text-slate-700 mb-1">
+                    Role *
+                  </label>
+                  <select
+                    id="addRole"
+                    value={addRole}
+                    onChange={(e) => setAddRole(e.target.value)}
+                    className="w-full px-3 py-2 text-sm bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="regional_officer">Regional Officer</option>
+                    <option value="officer">Education Officer</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+                {addRole === 'regional_officer' && (
+                  <div>
+                    <label htmlFor="addRegion" className="block text-xs font-medium text-slate-700 mb-1">
+                      Region *
+                    </label>
+                    <select
+                      id="addRegion"
+                      value={addRegion}
+                      onChange={(e) => setAddRegion(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 text-sm bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select Region...</option>
+                      {regions.map((region) => (
+                        <option key={region.id} value={region.id}>
+                          {region.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={adding || (addRole === 'regional_officer' && !addRegion)}
+                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+                >
+                  {adding ? 'Adding...' : 'Add User'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setAddEmail('');
+                    setAddRole('regional_officer');
+                    setAddRegion('');
+                  }}
+                  className="px-4 py-2 text-sm bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label htmlFor="userSearch" className="block text-sm font-medium text-slate-700 mb-1">
+              Search Users
+            </label>
+            <input
+              id="userSearch"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Email, name, or school code..."
+              className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400"
+            />
+          </div>
+          <div>
+            <label htmlFor="roleFilter" className="block text-sm font-medium text-slate-700 mb-1">
+              Filter by Role
+            </label>
+            <select
+              id="roleFilter"
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All Roles</option>
+              <option value="admin">Admin</option>
+              <option value="regional_officer">Regional Officer</option>
+              <option value="officer">Education Officer</option>
+              <option value="school">School</option>
+            </select>
+          </div>
         </div>
-      )}
+
+        {/* Active Users List */}
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : filteredUsers.length === 0 ? (
+          <p className="text-slate-500 text-center py-8">No users found</p>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-slate-600 mb-2">
+              Showing {filteredUsers.length} active users
+            </p>
+            {filteredUsers.map((user) => (
+              <UserRow
+                key={user.id}
+                user={user}
+                regions={regions}
+                saving={saving === user.id}
+                onRoleChange={handleRoleChange}
+                getRoleBadgeColor={getRoleBadgeColor}
+                getRoleLabel={getRoleLabel}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -532,11 +510,11 @@ function UserRow({
     : null;
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+    <div className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="font-medium text-gray-900 truncate">{user.email}</p>
+            <p className="font-medium text-slate-900 truncate">{user.email}</p>
             <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getRoleBadgeColor(user.role)}`}>
               {getRoleLabel(user.role)}
             </span>
@@ -552,12 +530,12 @@ function UserRow({
             )}
           </div>
           {user.full_name && (
-            <p className="text-sm text-gray-600 mt-0.5">{user.full_name}</p>
+            <p className="text-sm text-slate-600 mt-0.5">{user.full_name}</p>
           )}
           {user.school_code && (
-            <p className="text-xs text-gray-500 mt-0.5">School: {user.school_code}</p>
+            <p className="text-xs text-slate-500 mt-0.5">School: {user.school_code}</p>
           )}
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-slate-400 mt-1">
             Joined {new Date(user.created_at).toLocaleDateString()}
           </p>
         </div>
@@ -568,7 +546,7 @@ function UserRow({
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value)}
-                className="px-3 py-1.5 text-sm bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-1.5 text-sm bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="school">School</option>
                 <option value="officer">Education Officer</option>
@@ -580,7 +558,7 @@ function UserRow({
                 <select
                   value={selectedRegion}
                   onChange={(e) => setSelectedRegion(e.target.value)}
-                  className="px-3 py-1.5 text-sm bg-white text-gray-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-1.5 text-sm bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select Region...</option>
                   {regions.map((region) => (
@@ -595,14 +573,14 @@ function UserRow({
                 <button
                   onClick={handleSave}
                   disabled={saving || (selectedRole === 'regional_officer' && !selectedRegion)}
-                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </button>
                 <button
                   onClick={handleCancel}
                   disabled={saving}
-                  className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50"
+                  className="px-3 py-1 text-sm bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -611,7 +589,7 @@ function UserRow({
           ) : (
             <button
               onClick={() => setEditing(true)}
-              className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+              className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
             >
               Edit Role
             </button>

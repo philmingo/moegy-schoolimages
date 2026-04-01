@@ -14,10 +14,10 @@ export default async function RegionalOfficerPage() {
 
   if (!user.regionId) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-md p-8 max-w-md text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">No Region Assigned</h2>
-          <p className="text-gray-600">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 max-w-md text-center">
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">No Region Assigned</h2>
+          <p className="text-slate-600">
             Your account has not been assigned to a region yet. Please contact an administrator.
           </p>
         </div>
@@ -68,7 +68,7 @@ export default async function RegionalOfficerPage() {
   const schoolsWithImages = new Set(existingImages.map((img: any) => img.school_code)).size;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <DashboardHeaderWrapper
         title={`Regional Officer - ${regionName}`}
         subtitle={`${user.email} • Upload on behalf of schools in ${regionName}`}
@@ -79,17 +79,17 @@ export default async function RegionalOfficerPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-sm text-gray-600 mb-1">Schools in Region</p>
-            <p className="text-3xl font-bold text-gray-900">{schoolList.length}</p>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <p className="text-sm font-medium text-slate-500 mb-1">Schools in Region</p>
+            <p className="text-3xl font-bold text-slate-900">{schoolList.length}</p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-sm text-gray-600 mb-1">Schools with Images</p>
-            <p className="text-3xl font-bold text-gray-900">{schoolsWithImages}</p>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <p className="text-sm font-medium text-slate-500 mb-1">Schools with Images</p>
+            <p className="text-3xl font-bold text-slate-900">{schoolsWithImages}</p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-sm text-gray-600 mb-1">Total Images</p>
-            <p className="text-3xl font-bold text-gray-900">{existingImages.length}</p>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <p className="text-sm font-medium text-slate-500 mb-1">Total Images</p>
+            <p className="text-3xl font-bold text-slate-900">{existingImages.length}</p>
           </div>
         </div>
 

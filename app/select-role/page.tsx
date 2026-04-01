@@ -46,9 +46,9 @@ export default function SelectRolePage() {
     (selectedRole === 'regional_officer' && selectedRegion);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="max-w-lg w-full">
-        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
           {/* Header */}
           <div className="text-center mb-6">
             <div className="flex justify-center mb-4">
@@ -61,8 +61,8 @@ export default function SelectRolePage() {
                 priority
               />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Select Your Role</h1>
-            <p className="text-gray-600 text-sm">
+            <h1 className="text-2xl font-bold text-slate-900 mb-1">Select Your Role</h1>
+            <p className="text-slate-600 text-sm">
               Choose your role to continue. An administrator will review and approve your access.
             </p>
           </div>
@@ -80,7 +80,7 @@ export default function SelectRolePage() {
                 className={`block p-4 rounded-xl border-2 cursor-pointer transition-all ${
                   selectedRole === 'officer'
                     ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                 }`}
                 onClick={() => {
                   setSelectedRole('officer');
@@ -100,8 +100,8 @@ export default function SelectRolePage() {
                     className="mt-1 text-blue-600"
                   />
                   <div>
-                    <p className="font-semibold text-gray-900">Education Officer</p>
-                    <p className="text-sm text-gray-600 mt-0.5">
+                    <p className="font-semibold text-slate-900">Education Officer</p>
+                    <p className="text-sm text-slate-600 mt-0.5">
                       View all school report images across all regions
                     </p>
                   </div>
@@ -112,7 +112,7 @@ export default function SelectRolePage() {
                 className={`block p-4 rounded-xl border-2 cursor-pointer transition-all ${
                   selectedRole === 'regional_officer'
                     ? 'border-teal-500 bg-teal-50'
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                 }`}
                 onClick={() => setSelectedRole('regional_officer')}
               >
@@ -126,8 +126,8 @@ export default function SelectRolePage() {
                     className="mt-1 text-teal-600"
                   />
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-900">Regional Officer</p>
-                    <p className="text-sm text-gray-600 mt-0.5">
+                    <p className="font-semibold text-slate-900">Regional Officer</p>
+                    <p className="text-sm text-slate-600 mt-0.5">
                       View and upload images for schools in your assigned region
                     </p>
                   </div>
@@ -138,7 +138,7 @@ export default function SelectRolePage() {
             {/* Region Selector (shown when Regional Officer is selected) */}
             {selectedRole === 'regional_officer' && (
               <div className="mb-6">
-                <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="region" className="block text-sm font-medium text-slate-700 mb-1">
                   Select Your Region
                 </label>
                 <select
@@ -146,7 +146,7 @@ export default function SelectRolePage() {
                   value={selectedRegion}
                   onChange={(e) => setSelectedRegion(e.target.value)}
                   required
-                  className="w-full px-3 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full px-3 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                   <option value="">Choose a region...</option>
                   {REGIONS.map((region) => (
@@ -162,12 +162,12 @@ export default function SelectRolePage() {
             <button
               type="submit"
               disabled={!canSubmit || submitting}
-              className="w-full py-3 px-6 text-white font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+              className="w-full py-3 px-6 text-white font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors shadow-sm"
             >
               {submitting ? 'Submitting...' : 'Submit for Approval'}
             </button>
 
-            <p className="text-xs text-gray-500 text-center mt-4">
+            <p className="text-xs text-slate-500 text-center mt-4">
               Your request will be reviewed by an administrator. You will gain access once approved.
             </p>
           </form>
