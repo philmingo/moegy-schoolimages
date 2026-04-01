@@ -227,25 +227,18 @@ export default function AdminImageListView({
     setDeleteError(null);
 
     try {
-      const supabase = school_report_images_createClient();
+      const res = await fetch('/api/delete-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_id: imageToDelete.id,
+          storage_path: imageToDelete.storage_path,
+        }),
+      });
 
-      // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from('school-report-images')
-        .remove([imageToDelete.storage_path]);
-
-      if (storageError) {
-        throw storageError;
-      }
-
-      // Delete from database
-      const { error: dbError } = await supabase
-        .from('school_report_images_uploaded_images')
-        .delete()
-        .eq('id', imageToDelete.id);
-
-      if (dbError) {
-        throw dbError;
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || 'Failed to delete image');
       }
 
       // Remove from local state
