@@ -98,40 +98,23 @@ export default function CategoryUploadSection({
     setError(null);
 
     try {
-      const supabase = school_report_images_createClient();
-
-      // Generate unique filename
-      const fileExt = pendingFile.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const storagePath = `${schoolCode}/${category.id}/${fileName}`;
-
-      // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('school-report-images')
-        .upload(storagePath, pendingFile);
-
-      if (uploadError) {
-        throw uploadError;
+      const formData = new FormData();
+      formData.append('file', pendingFile);
+      formData.append('school_code', schoolCode);
+      formData.append('category_id', category.id);
+      formData.append('filename', pendingFile.name);
+      if (comment.trim()) {
+        formData.append('comment', comment.trim());
       }
 
-      // Insert metadata via server API to avoid RLS issues
       const res = await fetch('/api/upload-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          school_code: schoolCode,
-          category_id: category.id,
-          storage_path: storagePath,
-          filename: pendingFile.name,
-          comment: comment.trim() || undefined,
-        }),
+        body: formData,
       });
 
       if (!res.ok) {
-        // If DB insert fails, delete the uploaded file
-        await supabase.storage.from('school-report-images').remove([storagePath]);
         const errBody = await res.json().catch(() => ({}));
-        throw new Error(errBody.error || 'Failed to save image record');
+        throw new Error(errBody.error || 'Failed to upload image');
       }
 
       const data = await res.json();
