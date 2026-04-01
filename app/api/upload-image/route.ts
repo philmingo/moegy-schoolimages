@@ -41,10 +41,14 @@ export async function POST(request: NextRequest) {
     const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
     const storagePath = `${school_code}/${category_id}/${uniqueName}`;
 
+    // Convert File to Buffer for Node.js/Netlify compatibility
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
     // Upload file to storage using service client (bypasses RLS)
     const { error: uploadError } = await supabase.storage
       .from('school-report-images')
-      .upload(storagePath, file, {
+      .upload(storagePath, buffer, {
         contentType: file.type,
       });
 
