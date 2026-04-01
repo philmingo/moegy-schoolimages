@@ -1,5 +1,6 @@
 import { school_report_images_getCurrentUser, school_report_images_requireRole } from '@/lib/auth/user';
 import { school_report_images_createServerClient } from '@/lib/supabase/server';
+import { school_report_images_createServiceClient } from '@/lib/supabase/service';
 import { redirect } from 'next/navigation';
 import DashboardHeaderWrapper from '@/components/layout/DashboardHeaderWrapper';
 import AdminImageListView from '@/components/admin/AdminImageListView';
@@ -21,8 +22,11 @@ export default async function OfficerPage() {
     .select('*')
     .order('display_order');
 
+  // Use service client for uploaded_images to bypass RLS
+  const serviceClient = school_report_images_createServiceClient();
+
   // Fetch first page of images (pagination handled client-side)
-  const { data: allImages } = await supabase
+  const { data: allImages } = await serviceClient
     .from('school_report_images_uploaded_images')
     .select(`
       *,
@@ -32,11 +36,11 @@ export default async function OfficerPage() {
     .limit(50);
 
   // Get statistics
-  const { count: totalImages } = await supabase
+  const { count: totalImages } = await serviceClient
     .from('school_report_images_uploaded_images')
     .select('*', { count: 'exact', head: true });
 
-  const { data: schoolsWithImages } = await supabase
+  const { data: schoolsWithImages } = await serviceClient
     .from('school_report_images_uploaded_images')
     .select('school_code');
 

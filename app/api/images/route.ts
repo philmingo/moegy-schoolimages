@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { school_report_images_createServerClient } from '@/lib/supabase/server';
+import { school_report_images_createServiceClient } from '@/lib/supabase/service';
 import { school_report_images_getCurrentUser } from '@/lib/auth/user';
 
 export async function GET(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const schoolsPerPage = parseInt(searchParams.get('limit') || '10');
     const categoryId = searchParams.get('categoryId') || null;
 
-    const supabase = await school_report_images_createServerClient();
+    const supabase = school_report_images_createServiceClient();
 
     // Step 1: Get all unique school codes with image count, filtered by category
     let schoolQuery = supabase

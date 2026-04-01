@@ -1,5 +1,6 @@
 import { school_report_images_requireRole } from '@/lib/auth/user';
 import { school_report_images_createServerClient } from '@/lib/supabase/server';
+import { school_report_images_createServiceClient } from '@/lib/supabase/service';
 import { redirect } from 'next/navigation';
 import DashboardHeaderWrapper from '@/components/layout/DashboardHeaderWrapper';
 import RegionalOfficerView from '@/components/regional-officer/RegionalOfficerView';
@@ -54,10 +55,11 @@ export default async function RegionalOfficerPage() {
   // Get all school codes in this region
   const regionSchoolCodes = schoolList.map((s: any) => s.code);
 
-  // Fetch existing images for all schools in this region
+  // Fetch existing images using service client to bypass RLS
+  const serviceClient = school_report_images_createServiceClient();
   let existingImages: any[] = [];
   if (regionSchoolCodes.length > 0) {
-    const { data: images } = await supabase
+    const { data: images } = await serviceClient
       .from('school_report_images_uploaded_images')
       .select('*')
       .in('school_code', regionSchoolCodes);

@@ -1,5 +1,6 @@
 import { school_report_images_getCurrentUser, school_report_images_requireRole } from '@/lib/auth/user';
 import { school_report_images_createServerClient } from '@/lib/supabase/server';
+import { school_report_images_createServiceClient } from '@/lib/supabase/service';
 import { redirect } from 'next/navigation';
 import SchoolUploadInterface from '@/components/upload/SchoolUploadInterface';
 import DashboardHeaderWrapper from '@/components/layout/DashboardHeaderWrapper';
@@ -32,8 +33,9 @@ export default async function SchoolPage() {
     return a.name.localeCompare(b.name);
   });
 
-  // Fetch existing images for this school
-  const { data: existingImages } = await supabase
+  // Fetch existing images using service client to bypass RLS
+  const serviceClient = school_report_images_createServiceClient();
+  const { data: existingImages } = await serviceClient
     .from('school_report_images_uploaded_images')
     .select('*')
     .eq('school_code', user.schoolCode);
